@@ -2,7 +2,7 @@
 
 A light-themed marketing hub for the Shopify APAC team — hosted on GitHub Pages, content managed via Google Sheets.
 
-**Live site:** https://carlottacriel.github.io/apacmarketinghub
+**Live site:** [https://carlottacriel.github.io/apacmarketinghub](https://apacmarketinghub.quick.shopify.io/)
 
 ---
 
