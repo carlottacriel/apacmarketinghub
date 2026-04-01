@@ -1860,3 +1860,38 @@ iframe.dashboard-embed {
   .welcome-banner h1 { font-size: 20px; }
   .tracker-hero, .ai-hero, .brand-hero { padding: 24px 22px; }
 }
+
+/* ── DOC TILE CARD ───────────────────────────────────── */
+.doc-tile-grid {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.doc-tile-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.15s;
+  cursor: pointer;
+  width: 260px;
+}
+
+.doc-tile-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--green);
+  transform: translateY(-2px);
+}
+
+.doc-tile-card-icon { font-size: 40px; margin-bottom: 12px; }
+.doc-tile-card-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+.doc-tile-card-sub { font-size: 12px; color: var(--text-muted); }
