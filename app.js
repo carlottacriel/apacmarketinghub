@@ -235,6 +235,24 @@ function renderLinkCards(data, defaultIcon = '🔗') {
     </a>`).join('');
 }
 
+function renderOKRTiles(data) {
+  if (!data || data.length === 0) {
+    return placeholder('🎯', 'Add OKR docs to the <strong>okrs</strong> sheet tab.', 'Columns: name, link, owner');
+  }
+  return data.map(row => {
+    const keys = Object.keys(row);
+    const name  = row[keys[0]] || 'Untitled';
+    const link  = row[keys[1]] || '#';
+    const owner = row[keys[2]] || '';
+    return `
+      <a class="doc-tile-card" href="${esc(link)}" target="_blank" rel="noopener">
+        <div class="doc-tile-card-icon">📋</div>
+        <div class="doc-tile-card-title">${esc(name)}</div>
+        ${owner ? `<div class="doc-tile-card-sub">Owner: ${esc(owner)}</div>` : ''}
+      </a>`;
+  }).join('');
+}
+
 function renderTeam(data) {
   if (!data || data.length === 0) {
     return placeholder('👥', 'Add team members to the <strong>team</strong> sheet tab.', 'Columns: name, role, photo_url, slack_handle');
@@ -580,11 +598,7 @@ const TAB_LOADERS = {
   'hub-okrs': async () => {
     const data = await fetchSheet(SHEETS.okrs);
     const el = document.getElementById('okrs-grid');
-    if (el) el.innerHTML = renderLinkCards(data, '🎯');
-    else {
-      const fallback = document.getElementById('okrs-grid');
-      if (fallback) fallback.innerHTML = placeholder('🎯', 'Add OKR links to the <strong>okrs</strong> sheet tab.', 'Columns: title, url, description');
-    }
+    if (el) el.innerHTML = renderOKRTiles(data);
   },
 
   'content-repo': async () => {
