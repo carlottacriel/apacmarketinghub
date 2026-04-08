@@ -727,11 +727,10 @@ function initCalendar(data) {
   if (!data || data.length === 0) {
     wrap.innerHTML = `
       <div class="cal-empty">
-        <div class="ph-icon">📋</div>
-        <p>To display live tactics, publish the Google Sheet:<br>
-        <strong>File → Share → Publish to web → CSV</strong></p>
-        <a class="btn-primary" href="${esc(CONFIG.LINKS?.tacticTrackerSheet || '#')}" target="_blank" style="margin-top:14px; display:inline-flex;">
-          Open Google Sheet ↗
+        <div class="ph-icon">📅</div>
+        <p>View all APAC marketing activities in the full tracker.</p>
+        <a class="btn-primary" href="https://apac-marketing-tracker.quick.shopify.io/" target="_blank" rel="noopener" style="margin-top:14px; display:inline-flex;">
+          Open APAC Marketing Tracker ↗
         </a>
       </div>`;
     return;
