@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="quick" content="yesindex" />
+  <title>APAC Marketing Tracker Hub</title>
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <style>
+    :root {
+      --bg:#0f1117; --surface:#1a1d27; --surface2:#242738; --border:#2e3147;
+      --text:#e2e8f0; --muted:#8b8fa8; --green:#95bf47; --green-dk:#7aa836;
+      --shadow:rgba(0,0,0,0.4);
+      --jp:#4ade80; --anz:#fb923c; --sea:#60a5fa; --gcr:#c084fc; --apac:#8b8fa8;
+    }
+    body.light {
+      --bg:#f4f6f8; --surface:#ffffff; --surface2:#eef0f4; --border:#d1d5db;
+      --text:#1a1d27; --muted:#6b7280; --green:#5a8a00; --green-dk:#4a7200;
+      --shadow:rgba(0,0,0,0.12);
+      --jp:#16a34a; --anz:#c2590a; --sea:#2563eb; --gcr:#9333ea; --apac:#6b7280;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;min-height:100vh;transition:background .2s,color .2s}
+
+    /* Nav */
+    nav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;gap:12px;height:54px;box-shadow:0 1px 4px var(--shadow)}
+    .nav-logo{font-weight:700;font-size:15px;color:var(--green);letter-spacing:-.3px;white-space:nowrap}
+    .nav-logo span{color:var(--text);font-weight:400}
+    .nav-sep{flex:1}
+    .nav-label{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+    .hub-btns{display:flex;gap:8px;flex-wrap:wrap}
+    .hub-btn{padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;text-decoration:none;display:inline-block}
+    .hub-btn:hover{border-color:var(--green);color:var(--green)}
+    .hub-btn.soon{opacity:.45;cursor:default}
+    .hub-btn.soon:hover{border-color:var(--border);color:var(--text)}
+    .theme-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+    .theme-btn:hover{border-color:var(--green)}
+
+    /* Sync bar */
+    #sync-bar{background:var(--surface2);border-bottom:1px solid var(--border);padding:6px 20px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+    .pulse{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0}
+    .pulse.ok{background:var(--green);animation:blink 2s ease-in-out infinite}
+    .pulse.err{background:#f87171}
+    .pulse.loading{background:#fbbf24;animation:blink .6s ease-in-out infinite}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+    /* Main shell */
+    .main{display:flex;flex-direction:column;height:calc(100vh - 54px - 33px)}
+
+    /* Stats bar */
+    .stats-bar{display:flex;gap:12px;padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+    .stat{display:flex;align-items:center;gap:6px;font-size:12px}
+    .stat-num{font-size:18px;font-weight:700;line-height:1}
+    .stat-lbl{color:var(--muted);font-size:11px}
+
+    /* Toolbar */
+    #toolbar{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0}
+    #search-input{flex:1;min-width:200px;max-width:380px;padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;outline:none;transition:border-color .15s}
+    #search-input::placeholder{color:var(--muted)}
+    #search-input:focus{border-color:var(--green)}
+    .filter-select{padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;cursor:pointer;outline:none;transition:border-color .15s}
+    .filter-select:hover,.filter-select:focus{border-color:var(--green)}
+    #result-count{font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap}
+
+    /* Wrapper */
+    .wrapper{flex:1;display:flex;overflow:hidden}
+
+    /* Sidebar */
+    aside{width:200px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);padding:16px 12px;overflow-y:auto;display:flex;flex-direction:column;gap:20px}
+    .sidebar-section h3{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+    .filter-btn{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;width:100%;text-align:left;margin-bottom:4px}
+    .filter-btn .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+    .filter-btn.active{background:var(--surface2)}
+    .filter-btn.active.jp{border-color:var(--jp);color:var(--jp)}
+    .filter-btn.active.anz{border-color:var(--anz);color:var(--anz)}
+    .filter-btn.active.sea{border-color:var(--sea);color:var(--sea)}
+    .filter-btn.active.gcr{border-color:var(--gcr);color:var(--gcr)}
+    .filter-btn.active.all{border-color:var(--green);color:var(--green)}
+    .legend-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-bottom:5px}
+    .legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+    .view-toggle{display:flex;gap:6px}
+    .view-btn{flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s}
+    .view-btn.active{background:var(--green);border-color:var(--green);color:#fff}
+
+    /* Main content */
+    .main-content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+    #calendar-wrap{flex:1;overflow:auto;padding:16px 20px}
+    #list-wrap{flex:1;overflow:auto;padding:16px 20px;display:none}
+
+    /* FullCalendar */
+    .fc{--fc-border-color:var(--border);--fc-today-bg-color:rgba(149,191,71,.1);--fc-neutral-bg-color:var(--surface2);--fc-page-bg-color:var(--bg)}
+    .fc .fc-toolbar-title{font-size:16px;font-weight:600;color:var(--text)}
+    .fc .fc-button{background:var(--surface2)!important;border-color:var(--border)!important;color:var(--text)!important;font-size:12px!important;padding:5px 10px!important}
+    .fc .fc-button:hover{background:var(--surface)!important;border-color:var(--green)!important;color:var(--green)!important}
+    .fc .fc-button-active{background:var(--green)!important;border-color:var(--green)!important;color:#fff!important}
+    .fc .fc-col-header-cell{background:var(--surface2)}
+    .fc .fc-col-header-cell-cushion{color:var(--muted);font-weight:600;font-size:12px;text-decoration:none}
+    .fc .fc-daygrid-day-number{color:var(--muted);font-size:11px;text-decoration:none}
+    .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number{color:var(--green);font-weight:700}
+    .fc td,.fc th{border-color:var(--border)!important}
+    .fc .fc-scrollgrid{border-color:var(--border)!important}
+    .fc-event{border-radius:4px!important;font-size:11px!important;font-weight:500!important;padding:1px 4px!important;cursor:pointer;border:none!important}
+    .fc-event-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .fc-daygrid-more-link{color:var(--muted)!important;font-size:11px!important}
+    .fc .fc-daygrid-day-frame{background:var(--bg)}
+    body.light .fc .fc-daygrid-day-frame{background:var(--surface)}
+
+    /* Partner-Led events */
+    .fc-partner-led{background-image:repeating-linear-gradient(-45deg,rgba(255,255,255,.13) 0,rgba(255,255,255,.13) 2px,transparent 2px,transparent 6px)!important;border-left:3px solid rgba(255,255,255,.45)!important}
+
+    /* List view */
+    .list-month{margin-bottom:24px}
+    .list-month-hdr{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+    .list-item{display:grid;grid-template-columns:80px 1fr 140px 80px;gap:10px;align-items:center;padding:9px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface);margin-bottom:4px;cursor:pointer;transition:border-color .15s}
+    .list-item:hover{border-color:var(--green)}
+    .list-item.partner-led{border-left:3px solid var(--green-dk)}
+    .list-date{font-size:11px;color:var(--muted)}
+    .list-name{font-size:13px;font-weight:500}
+    .list-type{font-size:11px;color:var(--muted);text-align:right}
+    .list-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;text-align:center;color:#fff}
+    .badge-jp{background:#16a34a}.badge-anz{background:#c2590a}.badge-sea{background:#2563eb}.badge-gcr{background:#9333ea}.badge-apac{background:#6b7280}
+
+    /* Modal */
+    #modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+    #modal-overlay.open{display:flex}
+    #modal{background:var(--surface);border:1px solid var(--border);border-radius:10px;max-width:620px;width:100%;max-height:90vh;overflow-y:auto;animation:pop .15s ease-out;box-shadow:0 8px 32px var(--shadow)}
+    @keyframes pop{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
+    .modal-bar{height:5px;border-radius:10px 10px 0 0}
+    .modal-body{padding:20px}
+    .modal-title{font-size:16px;font-weight:700;margin-bottom:2px;color:var(--text)}
+    .modal-subtitle{font-size:12px;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .partner-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--green-dk);color:#fff}
+    .modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+    .modal-field{background:var(--surface2);border-radius:6px;padding:8px 10px}
+    .modal-field.full{grid-column:1/-1}
+    .modal-field-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:3px}
+    .modal-field-val{font-size:12px;font-weight:500;color:var(--text);word-break:break-word;line-height:1.5}
+    .modal-field-val.empty{color:var(--muted);font-weight:400}
+    .modal-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+    .modal-link{padding:7px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block;border:1px solid var(--border);background:var(--surface2);color:var(--text);transition:all .15s}
+    .modal-link:hover{border-color:var(--green);color:var(--green)}
+    .modal-close{margin-left:auto;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s}
+    .modal-close:hover{border-color:var(--text);color:var(--text)}
+    .modal-info-from{font-size:11px;color:var(--muted);margin-top:10px;font-style:italic}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">APAC <span>Marketing Tracker Hub</span></div>
+  <div class="nav-sep"></div>
+  <div class="nav-label">Content Hubs →</div>
+  <div class="hub-btns">
+    <a class="hub-btn" href="https://anzcontent.quick.shopify.io/" target="_blank">🇦🇺 ANZ</a>
+    <a class="hub-btn" href="https://jp-contents-hub.quick.shopify.io/" target="_blank">🇯🇵 Japan</a>
+    <button class="hub-btn soon" onclick="comingSoon('GCR')">🇨🇳 GCR</button>
+    <button class="hub-btn soon" onclick="comingSoon('SEA')">🇸🇬 SEA</button>
+  </div>
+  <button class="theme-btn" id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">🌙</button>
+</nav>
+
+<div id="sync-bar">
+  <div class="pulse loading" id="sync-dot"></div>
+  <span id="sync-text">Loading from APAC Marketing Calendar…</span>
+</div>
+
+<div class="main">
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num" id="stat-total">—</div><div><div class="stat-lbl">Total Activities</div></div></div>
+    <div style="width:1px;background:var(--border);margin:0 4px"></div>
+    <div class="stat"><div class="stat-num" style="color:var(--anz)" id="stat-anz">—</div><div><div class="stat-lbl">🇦🇺 ANZ</div></div></div>
+    <div class="stat"><div class="stat-num" style="color:var(--sea)" id="stat-sea">—</div><div><div class="stat-lbl">🇸🇬 SEA</div></div></div>
+    <div class="stat"><div class="stat-num" style="color:var(--jp)"  id="stat-jp">—</div><div><div class="stat-lbl">🇯🇵 Japan</div></div></div>
+    <div class="stat"><div class="stat-num" style="color:var(--gcr)" id="stat-gcr">—</div><div><div class="stat-lbl">🇨🇳 GCR</div></div></div>
+    <div class="stat"><div class="stat-num" style="color:var(--apac)" id="stat-apac">—</div><div><div class="stat-lbl">🌏 APAC</div></div></div>
+  </div>
+
+  <div id="toolbar">
+    <input type="search" id="search-input" placeholder="🔍  Search activities, owners, tactic type…" oninput="onSearchFilter()">
+    <select id="filter-status" class="filter-select" onchange="onSearchFilter()">
+      <option value="">All Statuses</option>
+      <option>✅ Confirmed</option>
+      <option>🏁 Complete</option>
+      <option>🔄 Planning</option>
+      <option>⏳ TBD</option>
+      <option>🔁 In Progress</option>
+      <option>❌ Cancelled</option>
+    </select>
+    <select id="filter-tactic" class="filter-select" onchange="onSearchFilter()">
+      <option value="">All Tactic Types</option>
+      <option>ABM</option>
+      <option>Blog Post</option>
+      <option>Case Study</option>
+      <option>Conference</option>
+      <option>Content Boost (Paid/Social)</option>
+      <option>Event - IRL</option>
+      <option>Gated Content (ebook/whitepaper/website)</option>
+      <option>Marketing Campaign</option>
+      <option>Other</option>
+      <option>Podcast/Video</option>
+      <option>PR</option>
+      <option>Sales Micro Event</option>
+      <option>Scaled Demand Gen</option>
+      <option>Sponsorship</option>
+      <option>Webinar/Virtual Event</option>
+    </select>
+    <span id="result-count"></span>
+  </div>
+
+  <div class="wrapper">
+    <aside>
+      <div class="sidebar-section">
+        <h3>View</h3>
+        <div class="view-toggle">
+          <button class="view-btn active" id="btn-cal"  onclick="setView('calendar')">Cal</button>
+          <button class="view-btn"        id="btn-list" onclick="setView('list')">List</button>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <h3>Region</h3>
+        <button class="filter-btn active all" id="f-all"  onclick="setFilter('ALL')"><span class="dot" style="background:var(--green)"></span> All Regions</button>
+        <button class="filter-btn" id="f-anz"  onclick="setFilter('ANZ')"><span class="dot" style="background:var(--anz)"></span> 🇦🇺 ANZ</button>
+        <button class="filter-btn" id="f-sea"  onclick="setFilter('SEA')"><span class="dot" style="background:var(--sea)"></span> 🇸🇬 SEA</button>
+        <button class="filter-btn" id="f-jp"   onclick="setFilter('JP')"><span class="dot" style="background:var(--jp)"></span> 🇯🇵 Japan</button>
+        <button class="filter-btn" id="f-gcr"  onclick="setFilter('GCR')"><span class="dot" style="background:var(--gcr)"></span> 🇨🇳 GCR</button>
+        <button class="filter-btn" id="f-apac" onclick="setFilter('APAC')"><span class="dot" style="background:var(--apac)"></span> 🌏 APAC-wide</button>
+      </div>
+      <div class="sidebar-section">
+        <h3>Legend</h3>
+        <div class="legend-row"><div class="legend-dot" style="background:var(--anz)"></div>ANZ</div>
+        <div class="legend-row"><div class="legend-dot" style="background:var(--sea)"></div>SEA</div>
+        <div class="legend-row"><div class="legend-dot" style="background:var(--jp)"></div>Japan</div>
+        <div class="legend-row"><div class="legend-dot" style="background:var(--gcr)"></div>GCR</div>
+        <div class="legend-row"><div class="legend-dot" style="background:var(--apac)"></div>APAC-wide</div>
+        <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
+          <div class="legend-row" style="font-size:11px">
+            <div style="width:14px;height:9px;border-radius:2px;flex-shrink:0;border-left:3px solid rgba(149,191,71,.6);background:repeating-linear-gradient(-45deg,rgba(255,255,255,.12) 0,rgba(255,255,255,.12) 2px,#3a3d50 2px,#3a3d50 6px)"></div>Partner-Led
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main-content">
+      <div id="calendar-wrap"><div id="calendar"></div></div>
+      <div id="list-wrap"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="modal-overlay" onclick="closeModal(event)">
+  <div id="modal">
+    <div class="modal-bar" id="modal-bar"></div>
+    <div class="modal-body">
+      <div class="modal-title" id="m-title"></div>
+      <div class="modal-subtitle" id="m-subtitle"></div>
+
+      <div class="modal-grid">
+        <div class="modal-field"><div class="modal-field-lbl">Status</div><div class="modal-field-val" id="m-status"></div></div>
+        <div class="modal-field"><div class="modal-field-lbl">Region</div><div class="modal-field-val" id="m-region"></div></div>
+        <div class="modal-field" id="m-time-field" style="display:none"><div class="modal-field-lbl">Time (JST)</div><div class="modal-field-val" id="m-time"></div></div>
+        <div class="modal-field"><div class="modal-field-lbl">Project Champion</div><div class="modal-field-val" id="m-champion"></div></div>
+        <div class="modal-field"><div class="modal-field-lbl">Source Channel</div><div class="modal-field-val" id="m-source-ch"></div></div>
+        <div class="modal-field"><div class="modal-field-lbl">Campaign Tactic Type</div><div class="modal-field-val" id="m-tactic"></div></div>
+        <div class="modal-field"><div class="modal-field-lbl">Tech / Agency Partner</div><div class="modal-field-val" id="m-agency"></div></div>
+        <div class="modal-field"><div class="modal-field-lbl">Location</div><div class="modal-field-val" id="m-location"></div></div>
+        <div class="modal-field"><div class="modal-field-lbl">Segment</div><div class="modal-field-val" id="m-segment"></div></div>
+        <div class="modal-field"><div class="modal-field-lbl">Publication Name</div><div class="modal-field-val" id="m-publication"></div></div>
+        <div class="modal-field"><div class="modal-field-lbl">Channel Mix</div><div class="modal-field-val" id="m-channel-mix"></div></div>
+      </div>
+
+      <div class="modal-grid" id="m-objective-row" style="display:none">
+        <div class="modal-field full"><div class="modal-field-lbl">Objective</div><div class="modal-field-val" id="m-objective"></div></div>
+      </div>
+      <div class="modal-grid" id="m-hero-row" style="display:none">
+        <div class="modal-field full"><div class="modal-field-lbl">Hero Message</div><div class="modal-field-val" id="m-hero"></div></div>
+      </div>
+      <div class="modal-grid" id="m-notes-row" style="display:none">
+        <div class="modal-field full"><div class="modal-field-lbl">Notes</div><div class="modal-field-val" id="m-notes"></div></div>
+      </div>
+      <div class="modal-grid" id="m-bpo-row" style="display:none">
+        <div class="modal-field full"><div class="modal-field-lbl">BPO Follow Up (JP)</div><div class="modal-field-val" id="m-bpo"></div></div>
+      </div>
+
+      <div class="modal-actions">
+        <a class="modal-link" id="m-vault-btn"    href="#" target="_blank">🔗 Vault</a>
+        <a class="modal-link" id="m-sf-btn"       href="#" target="_blank">☁️ Salesforce</a>
+        <a class="modal-link" id="m-resource-btn" href="#" target="_blank">🔗 Resource Link</a>
+        <button class="modal-close" onclick="closeModal()">Close</button>
+      </div>
+      <div class="modal-info-from" id="m-info-from"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Config ───────────────────────────────────────────────────────
+const SHEET_ID  = '1iXiwUD4TMb-37LsE-rTgfPsUMQ0BOa5bexxMNi8HamA';
+// gviz/tq URLs work for logged-in Shopifolk (no "Publish to web" required)
+const GVIZ_BASE = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=`;
+const CSV_URL          = GVIZ_BASE + encodeURIComponent('NEW_Calendar_TEMPLATE');
+const CSV_URL_CAMPAIGNS = GVIZ_BASE + encodeURIComponent('campaigns');
+const LAST_UPDATED = 'Apr 8, 2026';
+
+const COUNTRY_CONFIG = {
+  ANZ:  { color:'#fb923c', fc:'#ea580c', label:'🇦🇺 ANZ',      badge:'badge-anz', order:0 },
+  SEA:  { color:'#60a5fa', fc:'#2563eb', label:'🇸🇬 SEA',       badge:'badge-sea', order:1 },
+  JP:   { color:'#4ade80', fc:'#16a34a', label:'🇯🇵 Japan',    badge:'badge-jp',  order:2 },
+  GCR:  { color:'#c084fc', fc:'#9333ea', label:'🇨🇳 GCR',       badge:'badge-gcr', order:3 },
+  APAC: { color:'#8b8fa8', fc:'#6b7280', label:'🌏 APAC-wide', badge:'badge-apac', order:4 },
+};
+
+// ── Fallback data (updated Apr 1, 2026) ──────────────────────────
+// 22-col schema: [status, dateStart, time, dateEnd, name, country, champion,
+//   sourceChannel, tacticType, location, segment, agency, publication,
+//   vault, sfLink, resourceUrl, objective, heroMessage, notes,
+//   channelMix, informationFrom, bpoFollowUp]
+const FALLBACK_DATA = [
+  ["🏁 Complete","1/11/2026","","1/13/2026","NRF ANZ Exec Engagement","🇦🇺 ANZ","Gabby Song","Shopify Owned","Sales Micro Event","NYC","LA, MM","","","https://vault.shopify.io/gsd/projects/48362-NRF-26-AU-Exec-Engagement","","","","","","","Revenue Events",""],
+  ["🏁 Complete","1/29/2026","","","Australian Open Hospitality","🇦🇺 ANZ","Gabby Song","Shopify Owned","Sales Micro Event","Melbourne","LA, MM","","","https://vault.shopify.io/gsd/projects/48035-AU-Australian-Open-Exec-Engagement-Jan-29-2026","","","","","","","Revenue Events",""],
+  ["🏁 Complete","2/13/2026","","","Partner: ECzine Day Session by TIS","🇯🇵 JP","Reisa Matsuda","Partner-Led","Webinar/Virtual Event","","","TIS","","","","","","","","","",""],
+  ["🏁 Complete","2/18/2026","","","Partner: Why Direct 2026 Spring","🇯🇵 JP","Reisa Matsuda","Partner-Led","Event - IRL","","","HuckleBerry","","","","","","","","","",""],
+  ["🏁 Complete","2/19/2026","","","Partner: Weblife Webinar 売上を最大化する\u201cShopifyで勝てる戦略5選\u201d","🇯🇵 JP","Reisa Matsuda","Partner-Led","Webinar/Virtual Event","","","Weblife","","","","","","","","","",""],
+  ["🏁 Complete","2/27/2026","","","Partner: Ecommerce Fair Tokyo 2026_PM-APAC-JP","🇯🇵 JP","Reisa Matsuda","Partner-Led","Sponsorship","","","StoreHero","","","","","","","","","",""],
+  ["🏁 Complete","3/2/2026","","","Partner: The Global Commerce Summit 2026","🇯🇵 JP","Reisa Matsuda","Partner-Led","Event - IRL","","","R6B","","","","","","","","","",""],
+  ["🏁 Complete","3/17/2026","","","AI Campaign — Retail Innovation Forum Lead Gen","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Other","","","","","","","","","","ABMモーションに組み込み済み。日程TBD","","#ai-h1-campaign-jp","✅ "],
+  ["🏁 Complete","3/17/2026","","","AI Webinar 「ECサイト終焉」w/ 奥谷氏 x Tom","🇯🇵 JP","Ayumi Manabe","Shopify Owned","Webinar/Virtual Event","","","","","https://vault.shopify.io/gsd/projects/48826-H1-26-ABM-2-0-Japan-Top-Accounts","","","","","TOFU/ABM; LP: commerce-innovation.jp/webinar/20260317; ~60 RSVPs as of 3/16; 15:00 JST","","#jp-webinar","✅ "],
+  ["🏁 Complete","3/18/2026","","","Partner: The Future of Resale Business on Shopify Plus","🇯🇵 JP","Reisa Matsuda","Partner-Led","Event - IRL","","","Resort, Huckleberry","","","","","","","","","",""],
+  ["🏁 Complete","3/18/2026","","","Partner: Joint Webinar — Future of Resale Business on Shopify Plus","🇯🇵 JP","Reisa Matsuda","Partner-Led","Webinar/Virtual Event","","","Resort","","","","","","","Proposed; verify status with Reisa","","Partner Marketing","✅ "],
+  ["🏁 Complete","3/19/2026","","","AI Campaign — GEO Playbook Blog (Localized)","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Blog Post","","","","","","","","","","ローカライズ完了・社内レビュー済み。チェックリストPDF制作中（Infobahn）","","#ai-h1-campaign-jp",""],
+  ["🏁 Complete","3/19/2026","","","Trust-Building — Case Study - Relive","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Case Study","","","","","","","","","","事例制作。チャンネルなし、手動更新","","No channel (manual)",""],
+  ["🔁 In Progress","3/20/2026","","4/30/2026","AI Webinar 「ECサイト終焉」w/ 奥谷氏 x Tom  On-Demand","🇯🇵 JP","Ayumi Manabe","Shopify Owned","Webinar/Virtual Event","","","","","","","https://commerce-innovation.jp/webinar/20260317_archive","","","","","#jp-webinar","✅ "],
+  ["🏁 Complete","3/23/2026","11:00","","AI Whitepaper Interview Part 1 — 藤原 × 中島聡","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Other","","","","","","","","","","元ユナイテッドアローズ藤原 × 元MS中島聡の対談収録。WP制作用。Ayumi参加予定（オンライン）","","#ai-h1-campaign-jp",""],
+  ["✅ Confirmed","3/24/2026","","","Shopify Connect SYD","🇦🇺 ANZ","Gabby Song","Shopify Owned","Event - IRL","Sydney","LA, MM, SMB","","","https://vault.shopify.io/gsd/projects/48366-AU-Shopify-Connect-Series-SYD-MELB-Q1-2026","","","","","","","Revenue Events",""],
+  ["✅ Confirmed","3/24/2026","","3/25/2026","eTail Asia","🇸🇬 SEA","Carlotta Criel","Shopify Owned","Conference","","","","","","","","","","","","Revenue Events",""],
+  ["✅ Confirmed","3/25/2026","","","Plus Hub — AIテーマ IRL Event (BrainSleep りんごさん、Anker菅野さん他)","🇯🇵 JP","Ayumi Manabe","Shopify Owned","Event - IRL","","","","","","","https://shopify-plushub.commmune.com/view/event/26945","","","AI Sidekick活用事例テーマ; ANKER 菅野さん登壇調整中; 表参道会場","","#jp-plus-hub-squad",""],
+  ["🔄 Planning","3/26/2026","","","Partner: Shopify Ecommerce Summit (Concentrix)","🇸🇬 SEA","Esabelle Koh","Partner-Led","Event - IRL","","MM","Concentrix","","","","","","","Korea-based; 30 expected leads, 2 PQLs","","Partner Marketing",""],
+  ["🏁 Complete","3/30/2026","17:30","","AI Whitepaper Interview Part 2 — 徳丸浩 × 須藤憲司","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Other","","","","","","","","","","テーマ：AI時代の最新技術とセキュリティ。徳丸浩(EGセキュア) × 須藤憲司(Kaizen Platform CEO)","","#ai-h1-campaign-jp",""],
+  ["🏁 Complete","3/31/2026","","","Trust-Building — Case Study - Brain Sleep","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Case Study","","","","","","","","","","事例制作。チャンネルなし、手動更新","","No channel (manual)",""],
+  ["🏁 Complete","3/31/2026","","","Trust-Building — Case Study - Moderato","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Case Study","","","","","","","","","","事例制作。チャンネルなし、手動更新","","No channel (manual)",""],
+  ["🏁 Complete","3/31/2026","","","Trust-Building — Case Study - KURAND","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Case Study","","","","","","","","","","事例制作。チャンネルなし、手動更新","","No channel (manual)",""],
+  ["🔁 In Progress","3/31/2026","","","Trust-Building — SEO blog x 1","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Other","","","","","","","","","","Gartnerとのメールプログラム。チャンネルなし、手動更新","","No channel (manual)",""],
+  ["🔁 In Progress","3/31/2026","","","Trust-Building — SEO blog x 2","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Other","","","","","","","","","","Gartnerとのメールプログラム。チャンネルなし、手動更新","","No channel (manual)",""],
+  ["🔁 In Progress","3/31/2026","","","Trust-Building — SEO blog x 3","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Other","","","","","","","","","","Gartnerとのメールプログラム。チャンネルなし、手動更新","","No channel (manual)",""],
+  ["✅ Confirmed","4/1/2026","","5/30/2026","Partner: Digital Transformation Campaign (The Working Party)","🇦🇺 ANZ","Britta Davies","Partner-Led","Marketing Campaign","","LA, MM","The Working Party","","","","","","","40 exp. leads, 5 PQLs; Q2 TWP flagship campaign","","Partner Marketing",""],
+  ["🔄 Planning","4/1/2026","","6/30/2026","Partner: Fusion 5 — Paid Advertising","🇦🇺 ANZ","Britta Davies","Partner-Led","Content Boost (Paid/Social)","","","PocketSquare / Fusion 5","","","","","","","Proposed; $4K USD","","Partner Marketing",""],
+  ["🔄 Planning","4/1/2026","","5/30/2026","Partner: Fusion 5 — AI Workshopping Session","🇦🇺 ANZ","Britta Davies","Partner-Led","Other","","","PocketSquare / Fusion 5","","","","","","","Proposed; $7K USD","","Partner Marketing",""],
+  ["🔄 Planning","4/1/2026","","6/30/2026","Partner: Aurora Project x Yiguo (GCR)","🇨🇳 GCR","Elise Li","Partner-Led","Marketing Campaign","","MM","Yiguo / Seel / GlobalE / Wati","","","","","","","Proposed; 100 exp. leads, 4 PQLs; $50K USD","","Partner Marketing",""],
+  ["✅ Confirmed","4/2/2026","","","Partner: HK Commerce NEXT (WaveCommerce)","🇨🇳 GCR","Elise Li","Partner-Led","Event - IRL","Hong Kong","MM","MindArc","","","","","","","60 exp. leads, 3 PQLs; $80K total budget","","Partner Marketing",""],
+  ["🔄 Planning","4/3/2026","","","AI Campaign — AI Disoverability Checklist (Localized)","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Blog Post","","","","","","","","","","ローカライズ完了・社内レビュー済み。チェックリストPDF制作中（Infobahn）","","#ai-h1-campaign-jp",""],
+  ["✅ Confirmed","4/7/2026","","","重鎮プロジェクト Vol.2 — EC業界勉強会","🇯🇵 JP","Ayumi Manabe","Shopify Owned","Event - IRL","","","","","","","","","","Quarterly EC industry leader Shopify study group; Vol.2","","#jp-advocator-program",""],
+  ["⏳ TBD","4/8/2026","","","Marketing Week Spring — Seminar Materials Deadline","🇯🇵 JP","Ami Takane","Shopify Owned","Other","Tokyo","","","","","","","","","登壇資料の提出締め切り。全セッション登壇者対応要","","#marketing-week-spring-2026",""],
+  ["✅ Confirmed","4/10/2026","","","AI Webinar for Export Sellers","🇨🇳 GCR","Nadine Coady","Other","Webinar/Virtual Event","","All Merchants","","","","","","","","","","TBC",""],
+  ["🔄 Planning","4/10/2026","","","Trust-Building — Gartner MQ Japanese Report","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Other","","","","","","","","","","Gartnerとのメールプログラム。チャンネルなし、手動更新","","No channel (manual)",""],
+  ["🔄 Planning","4/14/2026","","4/17/2026","CxO Letter 第2弾 — 着弾 (日経クロストレンド同封)","🇯🇵 JP","Ayumi Manabe","Shopify Owned","ABM","","","","","https://vault.shopify.io/gsd/projects/48826-H1-26-ABM-2-0-Japan-Top-Accounts","","","","","Target: LA/MM H・M・L + SMB High; Highは手書き封筒; 日経クロストレンド2月号同封","","#jp-abm-v2",""],
+  ["🔄 Planning","4/14/2026","","4/17/2026","Invitation Gifting Program for 5月 CxO Roundtable — 経営層向け","🇯🇵 JP","Ayumi Manabe","Shopify Owned","ABM","","","Resort / GENIEE","","https://vault.shopify.io/gsd/projects/48826-H1-26-ABM-2-0-Japan-Top-Accounts","","","","","LA High Priority対象; MOFU engagement; 手紙 + ギフト同梱","","#jp-abm-v2",""],
+  ["🔄 Planning","4/15/2026","","5/30/2026","Partner: UnlockLAx36kr Marketing Campaign (Silk)","🇨🇳 GCR","Elise Li","Partner-Led","Marketing Campaign","","LA, MM","Silk","","","","","","","Proposed; 100 exp. leads, 5 PQLs","","Partner Marketing",""],
+  ["🔄 Planning","4/15/2026","","","Partner: Weblife Shopify Roadmap Webinar","","Reisa Matsuda","Partner-Led","Webinar/Virtual Event","","","Weblife","","","","","","","","","",""],
+  ["✅ Confirmed","4/16/2026","","","Partner: AI-Native EC Growth Strategy Webinar (Sidekick × GENIEE CDP)","🇯🇵 JP","Reisa Matsuda","Partner-Led","Webinar/Virtual Event","","","Resort","","","","","","","Joint co-webinar; ABM-relevant — check alignment with JP webinar calendar","","Partner Marketing","✅ "],
+  ["🔄 Planning","4/20/2026","","4/24/2026","CxO Letter 第2弾 — BPO/BDR フォローアップ (コール + メール)","🇯🇵 JP","Ayumi Manabe","Shopify Owned","ABM","","","","","https://vault.shopify.io/gsd/projects/48826-H1-26-ABM-2-0-Japan-Top-Accounts","","","","","GW明けアポ取り目標; 電話 + メールの並行フォロー","","#jp-abm-v2","✅ "],
+  ["✅ Confirmed","4/21/2026","","","Partner: AI Decoded Event (MindArc)","🇦🇺 ANZ","Britta Davies","Partner-Led","Event - IRL","","MM","","","","","","","","8 exp. leads, 2 PQLs","","Partner Marketing",""],
+  ["✅ Confirmed","4/22/2026","","4/23/2026","AI Theme MOF 事例ウェビナー — 生活の木・中村さん登壇","🇯🇵 JP","Ayumi Manabe","Shopify Owned","Webinar/Virtual Event","","","","","","","","","","Sidekick AI活用事例テーマ; 登壇依頼書作成中 (山本さん); 日程TBD","","#jp-webinar","✅ "],
+  ["✅ Confirmed","4/22/2026","","4/24/2026","iMedia Retail Summit Australia 2026","🇦🇺 ANZ","Carlotta Criel","Shopify Owned","Conference","","LA","","","","","","","","","","Revenue Events",""],
+  ["🔁 In Progress","4/22/2026","","","AI Whitepaper AIコマース時代の生存戦略（仮） ","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Other","","","","","","","","","","","","#ai-h1-campaign-jp",""],
+  ["✅ Confirmed","4/22/2026","","","Marketing Week Spring — Booth Day 1","🇯🇵 JP","Ami Takane","Shopify Owned","Conference","Tokyo","","","","","","","","","パートナーブース常駐: Resort + アパレルウェブ。Shopifyスタッフ AM/PMシフト対応","","#marketing-week-spring-2026","✅ "],
+  ["✅ Confirmed","4/23/2026","","4/23/2026","Plus Hub オンラインイベントー新常識！旧お客様アカウント廃止への対応と最新情報","🇯🇵 JP","Ayumi Manabe","Shopify Owned","Webinar/Virtual Event","","X-Sell","","","","","https://shopify-plushub.commmune.com/view/event/27881","","","","","",""],
+  ["🔄 Planning","4/23/2026","","5/18/2026","Partner: ExporterChina Marketing Campaign (MeetSocial)","🇨🇳 GCR","Elise Li","Partner-Led","Marketing Campaign","","MM","MeetSocial","","","","","","","Proposed; 100 exp. leads, 5 PQLs","","Partner Marketing",""],
+  ["✅ Confirmed","4/23/2026","","","Marketing Week Spring — Booth Day 2","🇯🇵 JP","Ami Takane","Shopify Owned","Conference","Tokyo","","","","","","","","","パートナーブース常駐: AMS + HuckleBerry。Takuya終日参加予定","","#marketing-week-spring-2026","✅ "],
+  ["✅ Confirmed","4/24/2026","","","Partner: Marketing Week Spring 2026_PM-APAC-JP","","Reisa Matsuda","Partner-Led","Sponsorship","","","StoreHero","","","","","","","","","",""],
+  ["✅ Confirmed","4/24/2026","","","Marketing Week Spring — Shopify Day (Stage Jack)","🇯🇵 JP","Ami Takane","Shopify Owned","Conference","Tokyo","","","","","","","","","4セッション: ①TikTok Shop×Collective (Junichi+TikTok Rong) ②AI UCP/GEO (Nobu+Stephenie) ③Edition/SimGym (Mizuki/Minami) ④CSM Thought Leadership+Sidekick (Keisuke/Saika/Tom). Lead info provided by RX Japan","","#marketing-week-spring-2026","✅ "],
+  ["🔄 Planning","4/29/2026","","4/30/2026","Partner: Taiwan Commerce Show (Kleis)","🇨🇳 GCR","Elise Li","Partner-Led","Event - IRL","","MM","Kleis","","","","","","","Proposed; 100 exp. leads, 3 PQLs","","Partner Marketing",""],
+  ["✅ Confirmed","4/29/2026","","","Shopify Connect MELB","🇦🇺 ANZ","Gabby Song","Shopify Owned","Event - IRL","Melbourne","LA, MM, SMB","","","https://vault.shopify.io/gsd/projects/48366-AU-Shopify-Connect-Series-SYD-MELB-Q1-2026","","","","","","","Revenue Events",""],
+  ["🔄 Planning","5/1/2026","","6/18/2026","Partner: Fusion 5 — Future of Commerce Breakfast Event","🇦🇺 ANZ","Britta Davies","Partner-Led","Event - IRL","","","PocketSquare / Fusion 5","","","","","","","Proposed; $4K USD","","Partner Marketing",""],
+  ["⏳ TBD","5/5/2026","","5/7/2026","Retail Fest","🇦🇺 ANZ","Carlotta Criel","Shopify Owned","Conference","","SMB","","","","","","","","Vetting/Pending","","Revenue Events",""],
+  ["✅ Confirmed","5/7/2026","","","Add to Cart retail event SYD","🇦🇺 ANZ","Carlotta Criel","Shopify Owned","Conference","","MM, SMB, X-Sell","","","","","","","","","","Revenue Events",""],
+  ["🔄 Planning","5/14/2026","","5/16/2026","Partner: Automotive Aftermarket Expo (Soul and Wolf)","🇦🇺 ANZ","Britta Davies","Partner-Led","Sponsorship","","MM, SMB","Soul and Wolf","","","","","","","Proposed; 30 exp. leads, 5 PQLs; $25K AUD","","Partner Marketing",""],
+  ["✅ Confirmed","5/14/2026","","","Forefront Auckland Event","🇦🇺 ANZ","Shalini Karthikeyan","Shopify Owned","Conference","","","","","","","","","","New Zealand","","Revenue Events",""],
+  ["🔄 Planning","4/?","","","AI Campaign — Sponsored Media - Nikkei Advertorial","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Content Boost (Paid/Social)","","","","","","","","","","媒体選定確定・配信タイミング合意済み。メディアSOW提出済み","","#ai-h1-campaign-jp","✅ "],
+  ["🔄 Planning","5/?","","","AI Campaign — Sponsored Media - Nikkei Xtrend","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Content Boost (Paid/Social)","","","","","","","","","","媒体選定確定・配信タイミング合意済み。メディアSOW提出済み","","#ai-h1-campaign-jp","✅ "],
+  ["🔄 Planning","5/?","","","AI Campaign — Sponsored Media - Nikkei Xtech","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Content Boost (Paid/Social)","","","","","","","","","","媒体選定確定・配信タイミング合意済み。メディアSOW提出済み","","#ai-h1-campaign-jp","✅ "],
+  ["🔄 Planning","5/? ","","","AI Campaign — Sponsored Media - JB Press CX Forum","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Content Boost (Paid/Social)","","","Convert / Wishlist / Dotdigital","","","","","","","媒体選定確定・配信タイミング合意済み。メディアSOW提出済み","","#ai-h1-campaign-jp","✅ "],
+  ["🔄 Planning","5/? ","","","AI Campaign — Sponsored Media - JB Press AI Infra Forum","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Content Boost (Paid/Social)","","","Klaviyo","","","","","","","媒体選定確定・配信タイミング合意済み。メディアSOW提出済み","","#ai-h1-campaign-jp","✅ "],
+  ["🔄 Planning","4/?","" ,"","Partner: Shopify Merchant × Partner Bootcamp (GCR)","🇨🇳 GCR","Elise Li","Partner-Led","Event - IRL","","MM","","","","","","","","Proposed; 200 exp. leads, 4 PQLs; $20K USD","","Partner Marketing",""],
+  ["🔄 Planning","6/?","" ,"","Partner: Strategic Media Partnership with WWD JAPAN","🇯🇵 JP","Reisa Matsuda","Partner-Led","Content Boost (Paid/Social)","","","Apparel Web","","","","","","","Q2 content boost; date TBD","","Partner Marketing",""],
+  ["⏳ TBD","TBD","TBD","","NORA AI Summit Sydney","🇦🇺 ANZ","Carlotta Criel","Shopify Owned","Conference","Sydney","LA, MM","","","","","","","","August; Vetting/Pending","","Revenue Events",""],
+  ["⏳ TBD","TBD","TBD","","CEO Roundtable Sydney","🇦🇺 ANZ","Carlotta Criel","Shopify Owned","Sales Micro Event","Sydney","LA, MM","","","","","","","","August; Vetting/Pending","","Revenue Events",""],
+  ["⏳ TBD","TBD","TBD","","NFL Exec Engagement","🇦🇺 ANZ","Gabby Song","Shopify Owned","Sales Micro Event","","","","","","","","","","September; Vetting/Pending","","Revenue Events",""],
+  ["⏳ TBD","TBD","TBD","","Commerce Day","🇦🇺 ANZ","Gabby Song","Shopify Owned","Event - IRL","","","","","","","","","","October; Vetting/Pending","","Revenue Events",""],
+  ["⏳ TBD","TBD","TBD","","NORA AI Summit Melbourne","🇦🇺 ANZ","Carlotta Criel","Shopify Owned","Conference","Melbourne","LA, MM","","","","","","","","October; Vetting/Pending; Melbourne","","Revenue Events",""],
+  ["⏳ TBD","TBD","TBD","","The Business Show Australia","🇦🇺 ANZ","Carlotta Criel","Shopify Owned","Conference","Melbourne","MM, SMB","Event Marketing","","","","","","","November; Vetting/Pending","","Revenue Events",""],
+  ["⏳ TBD","TBD","TBD","","ARC Premium Boardroom Lunch","🇦🇺 ANZ","Daniela Solomon","Shopify Owned","Conference","Melbourne","LA, MM","Event Marketing","","","","","","","Q3; Vetting/Pending","","Revenue Events",""],
+  ["⏳ TBD","TBD","TBD","","Partner: Rewire Placeholder","","Reisa Matsuda","Partner-Led","","","","Rewire","","","","","","","","","",""],
+];
+
+// ── State ────────────────────────────────────────────────────────
+let allEvents    = [];
+let activeFilter = 'ALL';
+let searchQuery  = '';
+let statusFilter = '';
+let tacticFilter = '';
+let calendarInstance = null;
+
+// ── Theme ────────────────────────────────────────────────────────
+function applyTheme(mode) {
+  document.body.classList.toggle('light', mode === 'light');
+  document.getElementById('theme-toggle').textContent = mode === 'light' ? '🌙' : '☀️';
+  localStorage.setItem('apac-theme', mode);
+  if (calendarInstance) calendarInstance.render();
+}
+function toggleTheme() { applyTheme(document.body.classList.contains('light') ? 'dark' : 'light'); }
+(function(){ const s = localStorage.getItem('apac-theme'); if (s === 'light') applyTheme('light'); })();
+
+// ── Helpers ──────────────────────────────────────────────────────
+function parseDate(raw) {
+  if (!raw || /^tbd$/i.test(raw.trim())) return null;
+  raw = raw.trim();
+  // Fuzzy: "4/?" or "5/? " → first of that month
+  const fuzzy = raw.match(/^(\d+)\/\?/);
+  if (fuzzy) return { start: `2026-${String(fuzzy[1]).padStart(2,'0')}-01` };
+  // Range: "4/29–4/30" or "4/29-30"
+  const rangeMatch = raw.match(/(\d+)[\/](\d+)\s*[–~\-]+\s*(\d+)(?:[\/](\d+))?/);
+  if (rangeMatch) {
+    const [,m1,d1,d2_or_m2,d2] = rangeMatch;
+    const m2 = d2 ? d2_or_m2 : m1;
+    const dd2 = d2 || d2_or_m2;
+    return { start:`2026-${String(m1).padStart(2,'0')}-${String(d1).padStart(2,'0')}`,
+             end:  `2026-${String(m2).padStart(2,'0')}-${String(dd2).padStart(2,'0')}` };
+  }
+  // Single date: M/D or M/D/YYYY
+  const single = raw.match(/^(\d+)[\/](\d+)/);
+  if (single) {
+    const [,m,d] = single;
+    return { start:`2026-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}` };
+  }
+  if (/^\d{4}-\d{2}-\d{2}/.test(raw)) return { start: raw.slice(0,10) };
+  return null;
+}
+
+function parseCountry(raw) {
+  if (!raw) return 'APAC';
+  const s = raw.toUpperCase();
+  if (s.includes('JP') || s.includes('\uD83C\uDDEF\uD83C\uDDF5')) return 'JP';
+  if (s.includes('ANZ') || s.includes('\uD83C\uDDE6\uD83C\uDDFA')) return 'ANZ';
+  if (s.includes('SEA') || s.includes('SG'))  return 'SEA';
+  if (s.includes('GCR'))                       return 'GCR';
+  if (s.includes('APAC'))                      return 'APAC';
+  return 'APAC';
+}
+
+function countryColor(c) { return (COUNTRY_CONFIG[c] || COUNTRY_CONFIG.APAC).color; }
+function countryFc(c)    { return (COUNTRY_CONFIG[c] || COUNTRY_CONFIG.APAC).fc; }
+function countryLabel(c) { return (COUNTRY_CONFIG[c] || COUNTRY_CONFIG.APAC).label; }
+
+function rowToEvent(r) {
+  const status    = (r[0]  || '').trim();
+  const dateStart = (r[1]  || '').trim();
+  const timeRaw   = (r[2]  || '').trim(); // col C — Time
+  const dateEnd   = (r[3]  || '').trim(); // col D — Date End
+  const actName   = (r[4]  || '').trim(); // col E — Activity Name
+  if (!actName) return null;
+
+  const parsed    = parseDate(dateStart);
+  const parsedEnd = dateEnd ? parseDate(dateEnd) : null;
+
+  const isTbdDate = /^tbd$/i.test(dateStart);
+  const isFuzzy   = /^\d+\/\?/.test(dateStart);
+  const needsTbdPrefix = isTbdDate || isFuzzy || status === '⏳ TBD';
+
+  // Use placeholder date for purely undated TBD events so they appear on calendar
+  const effectiveStart = parsed ? parsed.start : (isTbdDate ? '2026-12-31' : null);
+  if (!effectiveStart) return null;
+
+  // Only show time if it's a valid HH:MM pattern
+  const time = /^\d{1,2}:\d{2}$/.test(timeRaw) ? timeRaw : '';
+
+  return {
+    title:          needsTbdPrefix ? `(TBD) ${actName}` : actName,
+    rawDate:        dateStart + (dateEnd ? ` – ${dateEnd}` : ''),
+    date:           effectiveStart,
+    end:            (parsedEnd ? parsedEnd.start : (parsed && parsed.end)) || undefined,
+    time,
+    status,
+    country:        parseCountry(r[5]),
+    champion:       (r[6]  || '').trim(),
+    sourceChannel:  (r[7]  || '').trim(),
+    tacticType:     (r[8]  || '').trim(),
+    location:       (r[9]  || '').trim(),
+    segment:        (r[10] || '').trim(),
+    agency:         (r[11] || '').trim(),
+    publication:    (r[12] || '').trim(),
+    vault:          (r[13] || '').trim(),
+    sfLink:         (r[14] || '').trim(),
+    resourceUrl:    (r[15] || '').trim(),
+    objective:      (r[16] || '').trim(),
+    heroMessage:    (r[17] || '').trim(),
+    notes:          (r[18] || '').trim(),
+    channelMix:     (r[19] || '').trim(),
+    informationFrom:(r[20] || '').trim(),
+    bpoFollowUp:    (r[21] || '').trim(),
+    partnerLed:     (r[7]  || '').trim() === 'Partner-Led',
+  };
+}
+
+// ── CSV → events (new 21-col format) ─────────────────────────────
+function csvToEvents(rows) {
+  return rows.slice(1).map(r => rowToEvent(r)).filter(Boolean);
+}
+
+// ── Fetch one gviz/tq CSV tab ─────────────────────────────────────
+async function fetchGvizTab(url) {
+  const res = await fetch(url, { credentials: 'include' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const text = await res.text();
+  if (text.trimStart().startsWith('<')) throw new Error('Got HTML (not logged in?)');
+  return Papa.parse(text, { skipEmptyLines: true });
+}
+
+// ── Load data ────────────────────────────────────────────────────
+async function loadData() {
+  setSyncState('loading', 'Loading from APAC Marketing Calendar…');
+  try {
+    // Fetch NEW_Calendar_TEMPLATE (primary) and campaigns (secondary) in parallel
+    const [calResult, campResult] = await Promise.allSettled([
+      fetchGvizTab(CSV_URL),
+      fetchGvizTab(CSV_URL_CAMPAIGNS),
+    ]);
+
+    const calEvents  = calResult.status  === 'fulfilled' ? csvToEvents(calResult.value.data)  : [];
+    const campEvents = campResult.status === 'fulfilled' ? csvToEvents(campResult.value.data) : [];
+
+    const merged = [...calEvents, ...campEvents];
+    if (merged.length < 3 && calResult.status !== 'fulfilled') throw new Error('Primary tab fetch failed');
+
+    // De-duplicate by title + date
+    const seen = new Set();
+    allEvents = merged.filter(e => {
+      const key = `${e.title}|${e.date}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    const src = [
+      calResult.status  === 'fulfilled' ? `calendar (${calEvents.length})`  : null,
+      campResult.status === 'fulfilled' ? `campaigns (${campEvents.length})` : null,
+    ].filter(Boolean).join(' + ');
+    setSyncState('ok', `Live data — ${allEvents.length} activities from ${src} · Last synced ${new Date().toLocaleTimeString()} · Refreshed every Friday`);
+  } catch(e) {
+    allEvents = FALLBACK_DATA.map(r => rowToEvent(r)).filter(Boolean);
+    setSyncState('err', `Showing ${allEvents.length} cached activities · Last updated: ${LAST_UPDATED} · Refreshed every Friday`);
+    console.warn('Sheet fetch failed:', e.message);
+  }
+  updateStats();
+  onSearchFilter();
+}
+
+function setSyncState(state, msg) {
+  document.getElementById('sync-dot').className = `pulse ${state}`;
+  document.getElementById('sync-text').textContent = msg;
+}
+
+// ── Stats ────────────────────────────────────────────────────────
+function updateStats() {
+  const counts = { JP:0, ANZ:0, SEA:0, GCR:0, APAC:0 };
+  allEvents.forEach(ev => { if (counts[ev.country] !== undefined) counts[ev.country]++; });
+  document.getElementById('stat-total').textContent = allEvents.length;
+  document.getElementById('stat-jp').textContent    = counts.JP;
+  document.getElementById('stat-anz').textContent   = counts.ANZ;
+  document.getElementById('stat-sea').textContent   = counts.SEA;
+  document.getElementById('stat-gcr').textContent   = counts.GCR;
+  document.getElementById('stat-apac').textContent  = counts.APAC;
+}
+
+// ── Filter ───────────────────────────────────────────────────────
+function filteredEvents() {
+  const q = searchQuery.toLowerCase();
+  return allEvents.filter(ev => {
+    if (activeFilter !== 'ALL' && ev.country !== activeFilter) return false;
+    if (statusFilter && ev.status !== statusFilter) return false;
+    if (tacticFilter && ev.tacticType !== tacticFilter) return false;
+    if (q) {
+      const haystack = [ev.title, ev.champion, ev.tacticType, ev.agency, ev.sourceChannel, ev.notes].join(' ').toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active','all','jp','anz','sea','gcr'));
+  const btn = document.getElementById(`f-${f.toLowerCase()}`);
+  if (btn) { btn.classList.add('active'); btn.classList.add(f === 'ALL' ? 'all' : f.toLowerCase()); }
+  refreshViews();
+}
+
+function onSearchFilter() {
+  searchQuery  = document.getElementById('search-input').value;
+  statusFilter = document.getElementById('filter-status').value;
+  tacticFilter = document.getElementById('filter-tactic').value;
+  refreshViews();
+}
+
+function refreshViews() {
+  const evs = filteredEvents();
+  document.getElementById('result-count').textContent = `${evs.length} of ${allEvents.length} activities`;
+  if (calendarInstance) {
+    calendarInstance.getEvents().forEach(e => e.remove());
+    evs.forEach(ev => calendarInstance.addEvent(toFcEvent(ev)));
+  }
+  renderList();
+}
+
+// ── Calendar ─────────────────────────────────────────────────────
+function toFcEvent(ev) {
+  const order = (COUNTRY_CONFIG[ev.country] || COUNTRY_CONFIG.APAC).order;
+  return {
+    id: ev.title + ev.date,
+    title: ev.title,
+    start: ev.date,
+    end: ev.end || undefined,
+    backgroundColor: countryFc(ev.country),
+    borderColor:     countryFc(ev.country),
+    textColor: '#fff',
+    order,
+    classNames: ev.partnerLed ? ['fc-partner-led'] : [],
+    extendedProps: { ...ev },
+  };
+}
+
+function renderCalendar() {
+  const el = document.getElementById('calendar');
+  if (calendarInstance) calendarInstance.destroy();
+  calendarInstance = new FullCalendar.Calendar(el, {
+    initialView: 'dayGridMonth',
+    height: '100%',
+    headerToolbar: { left:'prev,next today', center:'title', right:'dayGridMonth,listMonth' },
+    events: filteredEvents().map(toFcEvent),
+    eventOrder: 'order,title',
+    eventClick: ({ event }) => openModal(event.extendedProps),
+    eventDisplay: 'block',
+  });
+  calendarInstance.render();
+}
+
+// ── List view ─────────────────────────────────────────────────────
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function renderList() {
+  const wrap = document.getElementById('list-wrap');
+  const evs  = filteredEvents().slice().sort((a,b) => a.date.localeCompare(b.date));
+  const byMonth = {};
+  evs.forEach(ev => { const m = ev.date.slice(0,7); if (!byMonth[m]) byMonth[m] = []; byMonth[m].push(ev); });
+  wrap.innerHTML = Object.entries(byMonth).map(([ym, evs]) => {
+    const [y,m] = ym.split('-');
+    const rows = evs.map(ev => {
+      const cfg = COUNTRY_CONFIG[ev.country] || COUNTRY_CONFIG.APAC;
+      const pClass = ev.partnerLed ? ' partner-led' : '';
+      return `<div class="list-item${pClass}" onclick='openModal(${JSON.stringify(ev)})'>
+        <div class="list-date">${ev.rawDate || ev.date}</div>
+        <div class="list-name">${ev.title}</div>
+        <div class="list-type">${ev.tacticType || '—'}</div>
+        <div class="list-badge ${cfg.badge}">${ev.country}</div>
+      </div>`;
+    }).join('');
+    return `<div class="list-month"><div class="list-month-hdr">${MONTHS[+m-1]} ${y}</div>${rows}</div>`;
+  }).join('') || '<div style="padding:40px;text-align:center;color:var(--muted)">No activities match your filters.</div>';
+}
+
+// ── View toggle ───────────────────────────────────────────────────
+function setView(v) {
+  document.getElementById('calendar-wrap').style.display = v === 'calendar' ? '' : 'none';
+  document.getElementById('list-wrap').style.display     = v === 'list'     ? '' : 'none';
+  document.getElementById('btn-cal').classList.toggle('active',  v === 'calendar');
+  document.getElementById('btn-list').classList.toggle('active', v === 'list');
+  if (v === 'calendar' && calendarInstance) calendarInstance.updateSize();
+}
+
+// ── Modal ─────────────────────────────────────────────────────────
+function setField(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (val) { el.textContent = val; el.className = 'modal-field-val'; }
+  else { el.textContent = '—'; el.className = 'modal-field-val empty'; }
+}
+
+function openModal(ev) {
+  const c = ev.country || 'APAC';
+  document.getElementById('modal-bar').style.background = countryColor(c);
+  document.getElementById('m-title').textContent = ev.title;
+
+  // Subtitle: date (+ time if present) + partner badge
+  let sub = ev.rawDate || ev.date || '';
+  if (ev.time) sub += ' · ' + ev.time + ' JST';
+  let subtitleHTML = `<span>${sub}</span>`;
+  if (ev.partnerLed) subtitleHTML += '<span class="partner-badge">Partner-Led</span>';
+  document.getElementById('m-subtitle').innerHTML = subtitleHTML;
+
+  // Time field in grid
+  const timeFieldEl = document.getElementById('m-time-field');
+  if (ev.time) {
+    document.getElementById('m-time').textContent = ev.time + ' JST';
+    timeFieldEl.style.display = '';
+  } else {
+    timeFieldEl.style.display = 'none';
+  }
+
+  setField('m-status',     ev.status);
+  setField('m-region',     countryLabel(c));
+  setField('m-champion',   ev.champion);
+  setField('m-source-ch',  ev.sourceChannel);
+  setField('m-tactic',     ev.tacticType);
+  setField('m-agency',     ev.agency);
+  setField('m-location',   ev.location);
+  setField('m-segment',    ev.segment);
+  setField('m-publication',ev.publication);
+  setField('m-channel-mix',ev.channelMix);
+
+  // Full-width optional rows
+  function showRow(rowId, fieldId, val) {
+    const row = document.getElementById(rowId);
+    if (val) { document.getElementById(fieldId).textContent = val; row.style.display = ''; }
+    else row.style.display = 'none';
+  }
+  showRow('m-objective-row','m-objective', ev.objective);
+  showRow('m-hero-row',     'm-hero',      ev.heroMessage);
+  showRow('m-notes-row',    'm-notes',     ev.notes);
+  showRow('m-bpo-row',      'm-bpo',       ev.bpoFollowUp);
+
+  // Action buttons
+  function showLink(btnId, url) {
+    const btn = document.getElementById(btnId);
+    if (url && url.startsWith('http')) { btn.href = url; btn.style.display = ''; }
+    else btn.style.display = 'none';
+  }
+  showLink('m-vault-btn',    ev.vault);
+  showLink('m-sf-btn',       ev.sfLink);
+  showLink('m-resource-btn', ev.resourceUrl);
+
+  // Info from (muted footer)
+  const infoEl = document.getElementById('m-info-from');
+  infoEl.textContent = ev.informationFrom ? `Source: ${ev.informationFrom}` : '';
+
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal-overlay')) {
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
+}
+
+function comingSoon(name) {
+  alert(`${name} Content Hub is coming soon!\n\nWill be maintained by the ${name} team.`);
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+loadData().then(() => renderCalendar());
+</script>
+</body>
+</html>
