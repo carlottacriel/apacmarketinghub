@@ -167,6 +167,11 @@ function initSearch() {
 }
 
 function switchTab(tabId, pushState = true) {
+  // If leaving the tracker tab, clear the iframe so it stops rendering
+  if (tabId !== 'tactic-tracker') {
+    const iframe = document.getElementById('tracker-iframe');
+    if (iframe && iframe.src) iframe.src = '';
+  }
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('[data-tab]').forEach(el => el.classList.remove('active'));
 
@@ -598,11 +603,21 @@ const TAB_LOADERS = {
   },
 
   'tactic-tracker': async () => {
-    // Try Apps Script first — reads tactic tracker sheet live, no auth needed
-    let data = await fetchFromScript('tactics', null);
-    // Fallback to campaigns tab in the CMS sheet
-    if (!data) data = await fetchSheet(SHEETS.campaigns);
-    initCalendar(data);
+    // Lazy-load the iframe — only set src when this tab is actually opened
+    const iframe = document.getElementById('tracker-iframe');
+    const fallback = document.getElementById('tracker-fallback');
+    if (iframe && !iframe.src && iframe.dataset.src) {
+      iframe.src = iframe.dataset.src;
+      iframe.addEventListener('load', function onLoad() {
+        iframe.removeEventListener('load', onLoad);
+        try {
+          const doc = iframe.contentDocument || iframe.contentWindow.document;
+          if (!doc || doc.URL === 'about:blank') fallback.style.display = 'flex';
+        } catch(e) {
+          fallback.style.display = 'flex';
+        }
+      }, { once: true });
+    }
   },
 
   'hub-okrs': async () => {

@@ -289,35 +289,14 @@
         </a>
       </div>
 
-      <!-- Embedded tracker -->
+      <!-- Embedded tracker — src is set lazily by app.js when this tab opens -->
       <iframe
         id="tracker-iframe"
-        src="https://apac-marketing-tracker.quick.shopify.io/"
+        data-src="https://apac-marketing-tracker.quick.shopify.io/"
         title="APAC Marketing Tracker"
         style="flex:1;width:100%;border:none;min-height:calc(100vh - 52px);"
         allow="same-origin"
       ></iframe>
-
-      <script>
-        (function() {
-          var iframe = document.getElementById('tracker-iframe');
-          var fallback = document.getElementById('tracker-fallback');
-          // Show fallback if iframe fails to load or is blocked
-          iframe.addEventListener('error', function() {
-            fallback.style.display = 'flex';
-          });
-          // Detect X-Frame-Options block (loads about:blank or cross-origin)
-          iframe.addEventListener('load', function() {
-            try {
-              var doc = iframe.contentDocument || iframe.contentWindow.document;
-              if (!doc || doc.URL === 'about:blank') fallback.style.display = 'flex';
-            } catch(e) {
-              // Cross-origin block — show fallback
-              fallback.style.display = 'flex';
-            }
-          });
-        })();
-      </script>
     </section>
 
     <!-- ══════════════════════════════════════════ MKTG STRATEGY + OKRs ══ -->
