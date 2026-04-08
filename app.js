@@ -166,7 +166,7 @@ function initSearch() {
   });
 }
 
-function switchTab(tabId) {
+function switchTab(tabId, pushState = true) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('[data-tab]').forEach(el => el.classList.remove('active'));
 
@@ -174,9 +174,19 @@ function switchTab(tabId) {
   if (target) target.classList.add('active');
   document.querySelectorAll(`[data-tab="${tabId}"]`).forEach(el => el.classList.add('active'));
 
+  if (pushState) {
+    const hash = tabId === 'home' ? '' : '#' + tabId;
+    history.pushState({ tab: tabId }, '', location.pathname + hash);
+  }
+
   loadTabData(tabId);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+window.addEventListener('popstate', e => {
+  const tab = (e.state && e.state.tab) || (location.hash ? location.hash.replace('#', '') : 'home');
+  switchTab(tab, false);
+});
 
 // ── Lazy data loading ─────────────────────────────────────────────────
 const loadedTabs = new Set();
