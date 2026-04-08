@@ -167,10 +167,14 @@ function initSearch() {
 }
 
 function switchTab(tabId, pushState = true) {
-  // If leaving the tracker tab, clear the iframe so it stops rendering
+  // If leaving the tracker tab, park the iframe on about:blank so it stops rendering,
+  // and remove it from loadedTabs so the src is re-injected next visit.
   if (tabId !== 'tactic-tracker') {
     const iframe = document.getElementById('tracker-iframe');
-    if (iframe && iframe.src) iframe.src = '';
+    if (iframe && iframe.dataset.src && iframe.src !== 'about:blank' && iframe.src !== '') {
+      iframe.src = 'about:blank';
+      loadedTabs.delete('tactic-tracker');
+    }
   }
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('[data-tab]').forEach(el => el.classList.remove('active'));
@@ -606,7 +610,8 @@ const TAB_LOADERS = {
     // Lazy-load the iframe — only set src when this tab is actually opened
     const iframe = document.getElementById('tracker-iframe');
     const fallback = document.getElementById('tracker-fallback');
-    if (iframe && !iframe.src && iframe.dataset.src) {
+    const notLoaded = !iframe.src || iframe.src === 'about:blank' || iframe.src === window.location.href;
+    if (iframe && notLoaded && iframe.dataset.src) {
       iframe.src = iframe.dataset.src;
       iframe.addEventListener('load', function onLoad() {
         iframe.removeEventListener('load', onLoad);
