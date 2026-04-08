@@ -205,7 +205,7 @@
     <section id="key-stats" class="tab-content">
       <div class="page-header">
         <h1>Key Stats</h1>
-        <p>APAC marketing headline metrics — update via the <code>key_stats</code> sheet tab.</p>
+        <p>APAC marketing headline metrics.</p>
       </div>
       <div class="grid-4" id="key-stats-grid" style="margin-bottom: 28px;">
         <div class="loading" style="grid-column: 1/-1;">Loading stats…</div>
@@ -234,7 +234,7 @@
     <section id="campaign-deep-dive" class="tab-content">
       <div class="page-header">
         <h1>Campaign Deep Dive</h1>
-        <p>Campaign-level breakdown — update via the <code>campaigns</code> sheet tab.</p>
+        <p>Campaign-level breakdown across APAC.</p>
       </div>
       <div id="campaigns-table">
         <div class="loading">Loading campaigns…</div>
@@ -245,7 +245,7 @@
     <section id="mkt-insights" class="tab-content">
       <div class="page-header">
         <h1>Market Insights + Competitor</h1>
-        <p>Intel, research and competitive landscape — update via the <code>competitive</code> sheet tab.</p>
+        <p>Intel, research and competitive landscape.</p>
       </div>
       <div class="grid-auto" id="competitive-grid">
         <div class="loading">Loading…</div>
@@ -256,7 +256,7 @@
     <section id="account-insights" class="tab-content">
       <div class="page-header">
         <h1>Account Insights</h1>
-        <p>Key accounts and territory resources — update via the <code>resources</code> sheet tab (category: accounts).</p>
+        <p>Key accounts and territory resources.</p>
       </div>
       <div class="grid-auto" id="account-links">
         <div class="loading">Loading…</div>
@@ -264,75 +264,45 @@
     </section>
 
     <!-- ══════════════════════════════════════════════════ CALENDAR ══ -->
-    <section id="tactic-tracker" class="tab-content">
-      <div class="tracker-top-bar">
-        <div>
-          <h1 class="tracker-title">Calendar</h1>
-          <p class="tracker-subtitle">APAC marketing activities — filtered, navigable, all in one place.</p>
-        </div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-          <a class="btn-outline" href="https://docs.google.com/spreadsheets/d/1iXiwUD4TMb-37LsE-rTgfPsUMQ0BOa5bexxMNi8HamA/edit" target="_blank">Edit Sheet ↗</a>
-        </div>
+    <section id="tactic-tracker" class="tab-content" style="padding:0;display:flex;flex-direction:column;">
+
+      <!-- Fallback bar (shown if iframe is blocked) -->
+      <div id="tracker-fallback" style="display:none;align-items:center;justify-content:space-between;gap:16px;padding:16px 28px;background:#f9fafb;border-bottom:1px solid #e5e7eb;">
+        <p style="margin:0;font-size:13px;color:#6b7280;">Open the tracker in a new tab if it doesn't load below.</p>
+        <a href="https://apac-marketing-tracker.quick.shopify.io/" target="_blank" rel="noopener" class="btn-primary" style="white-space:nowrap;">
+          Open APAC Marketing Tracker ↗
+        </a>
       </div>
 
-      <!-- Tracker CTA banner -->
-      <a href="https://apac-marketing-tracker.quick.shopify.io/" target="_blank" rel="noopener" style="
-        display:flex; align-items:center; justify-content:space-between; gap:16px;
-        background: linear-gradient(135deg,#1a6b3a 0%,#0f4d2a 100%);
-        color:#fff; text-decoration:none;
-        padding:18px 28px; margin:0;
-        border-bottom:1px solid rgba(255,255,255,0.1);
-        transition:opacity 0.15s;
-      " onmouseover="this.style.opacity='0.92'" onmouseout="this.style.opacity='1'">
-        <div style="display:flex;align-items:center;gap:14px;">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;opacity:0.9"><rect x="3" y="4" width="18" height="18" rx="2" stroke="white" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
-          <div>
-            <div style="font-weight:700;font-size:14px;line-height:1.3;">APAC Marketing Tracker</div>
-            <div style="font-size:12px;opacity:0.8;margin-top:2px;">Full standalone view — all campaigns, events and tactics across APAC</div>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:8px 16px;font-size:13px;font-weight:600;white-space:nowrap;flex-shrink:0;">
-          Open Tracker
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
-        </div>
-      </a>
+      <!-- Embedded tracker -->
+      <iframe
+        id="tracker-iframe"
+        src="https://apac-marketing-tracker.quick.shopify.io/"
+        title="APAC Marketing Tracker"
+        style="flex:1;width:100%;border:none;min-height:calc(100vh - 52px);"
+        allow="same-origin"
+      ></iframe>
 
-      <!-- Filter bar -->
-      <div class="cal-filter-bar">
-        <div class="cal-search-wrap">
-          <svg class="cal-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          <input type="text" id="cal-search" class="cal-search-input" placeholder="Search tactics…" />
-        </div>
-        <select id="cal-filter-market" class="filter-select cal-filter"><option value="">All markets</option></select>
-        <select id="cal-filter-type" class="filter-select cal-filter"><option value="">All types</option></select>
-        <select id="cal-filter-owner" class="filter-select cal-filter"><option value="">All owners</option></select>
-        <select id="cal-filter-status" class="filter-select cal-filter"><option value="">All statuses</option></select>
-        <button id="cal-clear-filters" class="btn-clear-filters" style="display:none;">Clear filters</button>
-      </div>
-
-      <!-- Calendar header: month nav + view toggle -->
-      <div class="cal-header">
-        <div class="cal-month-nav">
-          <button id="cal-prev" class="cal-nav-btn">‹</button>
-          <span id="cal-month-label" class="cal-month-label"></span>
-          <button id="cal-next" class="cal-nav-btn">›</button>
-          <button id="cal-today" class="cal-today-btn">Today</button>
-        </div>
-        <div class="cal-legend" id="cal-legend"></div>
-      </div>
-
-      <!-- Calendar grid -->
-      <div class="cal-wrap" id="cal-wrap">
-        <div class="loading">Loading tactic data…</div>
-      </div>
-
-      <!-- Tactic detail modal -->
-      <div id="cal-modal" class="cal-modal" style="display:none;">
-        <div class="cal-modal-inner">
-          <button class="cal-modal-close" id="cal-modal-close">✕</button>
-          <div id="cal-modal-body"></div>
-        </div>
-      </div>
+      <script>
+        (function() {
+          var iframe = document.getElementById('tracker-iframe');
+          var fallback = document.getElementById('tracker-fallback');
+          // Show fallback if iframe fails to load or is blocked
+          iframe.addEventListener('error', function() {
+            fallback.style.display = 'flex';
+          });
+          // Detect X-Frame-Options block (loads about:blank or cross-origin)
+          iframe.addEventListener('load', function() {
+            try {
+              var doc = iframe.contentDocument || iframe.contentWindow.document;
+              if (!doc || doc.URL === 'about:blank') fallback.style.display = 'flex';
+            } catch(e) {
+              // Cross-origin block — show fallback
+              fallback.style.display = 'flex';
+            }
+          });
+        })();
+      </script>
     </section>
 
     <!-- ══════════════════════════════════════════ MKTG STRATEGY + OKRs ══ -->
@@ -350,7 +320,7 @@
     <section id="content-repo" class="tab-content">
       <div class="page-header">
         <h1>Content Repository</h1>
-        <p>Decks, templates, logos and campaign assets — update via the <code>assets</code> sheet tab.</p>
+        <p>Decks, templates, logos and campaign assets.</p>
       </div>
 
       <div class="filter-bar" style="margin-bottom: 20px;">
@@ -374,7 +344,7 @@
     <section id="self-serve" class="tab-content">
       <div class="page-header">
         <h1>Self-Serve Guides</h1>
-        <p>How-to docs, onboarding resources and team processes — update via the <code>onboarding</code> sheet tab.</p>
+        <p>How-to docs, onboarding resources and team processes.</p>
       </div>
       <div class="grid-auto" id="guides-grid">
         <div class="loading">Loading…</div>
@@ -385,7 +355,7 @@
     <section id="comms-pr" class="tab-content">
       <div class="page-header">
         <h1>Comms + PR</h1>
-        <p>Press resources, media contacts and comms briefs — update via the <code>comms</code> sheet tab.</p>
+        <p>Press resources, media contacts and comms briefs.</p>
       </div>
       <div class="grid-auto" id="comms-grid">
         <div class="loading">Loading…</div>
@@ -396,7 +366,7 @@
     <section id="ai-tools" class="tab-content">
       <div class="page-header">
         <h1>Useful Agents + Tools</h1>
-        <p>Internal AI tools, Cursor agents and Shopify resources — update via the <code>ai_tools</code> sheet tab.</p>
+        <p>Internal AI tools, Cursor agents and Shopify resources.</p>
       </div>
 
       <div class="ai-hero">
@@ -415,7 +385,7 @@
     <section id="brand-champion" class="tab-content">
       <div class="page-header">
         <h1>Be a Brand Champion</h1>
-        <p>Brand guidelines, tone of voice, logo downloads and approval contacts — update via the <code>brand</code> sheet tab.</p>
+        <p>Brand guidelines, tone of voice, logo downloads and approval contacts.</p>
       </div>
 
       <div class="brand-hero">

@@ -213,7 +213,7 @@ function renderAnnouncements(data) {
   if (!data || data.length === 0) {
     return placeholder(
       '💬',
-      'No announcements yet. Set up the Zapier automation (Slack → Google Sheet) and add rows to the <strong>announcements</strong> tab.',
+      'No announcements yet.',
       'Columns: timestamp, author, message, slack_link'
     );
   }
@@ -231,7 +231,7 @@ function renderAnnouncements(data) {
 
 function renderLinkCards(data, defaultIcon = '🔗') {
   if (!data || data.length === 0) {
-    return placeholder('📋', 'No items yet. Add rows to the relevant Google Sheet tab.', 'Columns: title, url, description, icon (optional)');
+    return placeholder('📋', 'No items yet.');
   }
   return data.map(row => `
     <a class="link-card" href="${esc(row.url || '#')}" target="_blank" rel="noopener">
@@ -247,7 +247,7 @@ function renderLinkCards(data, defaultIcon = '🔗') {
 
 function renderOKRTiles(data) {
   if (!data || data.length === 0) {
-    return placeholder('🎯', 'Add OKR docs to the <strong>okrs</strong> sheet tab.', 'Columns: name, link, owner');
+    return placeholder('🎯', 'No OKR docs yet.');
   }
   return data.map(row => {
     const keys = Object.keys(row);
@@ -265,7 +265,7 @@ function renderOKRTiles(data) {
 
 function renderTeam(data) {
   if (!data || data.length === 0) {
-    return placeholder('👥', 'Add team members to the <strong>team</strong> sheet tab.', 'Columns: name, role, photo_url, slack_handle');
+    return placeholder('👥', 'No team members found.');
   }
   return data.map(row => `
     <div class="card" style="text-align: center; padding: 24px;">
@@ -283,10 +283,10 @@ function renderTeam(data) {
 function renderMetrics(data) {
   if (!data || data.length === 0) {
     return `
-      <div class="metric-card"><div class="metric-label">GMV</div><div class="metric-value">—</div><div class="metric-delta neutral">Add rows to key_stats sheet</div></div>
-      <div class="metric-card"><div class="metric-label">Pipeline</div><div class="metric-value">—</div><div class="metric-delta neutral">Add rows to key_stats sheet</div></div>
-      <div class="metric-card"><div class="metric-label">SALs</div><div class="metric-value">—</div><div class="metric-delta neutral">Add rows to key_stats sheet</div></div>
-      <div class="metric-card"><div class="metric-label">Events</div><div class="metric-value">—</div><div class="metric-delta neutral">Add rows to key_stats sheet</div></div>`;
+      <div class="metric-card"><div class="metric-label">GMV</div><div class="metric-value">—</div><div class="metric-delta neutral">—</div></div>
+      <div class="metric-card"><div class="metric-label">Pipeline</div><div class="metric-value">—</div><div class="metric-delta neutral">—</div></div>
+      <div class="metric-card"><div class="metric-label">SALs</div><div class="metric-value">—</div><div class="metric-delta neutral">—</div></div>
+      <div class="metric-card"><div class="metric-label">Events</div><div class="metric-value">—</div><div class="metric-delta neutral">—</div></div>`;
   }
   return data.map(row => `
     <div class="metric-card">
@@ -298,7 +298,7 @@ function renderMetrics(data) {
 
 function renderCampaigns(data) {
   if (!data || data.length === 0) {
-    return placeholder('📅', 'Add campaigns to the <strong>campaigns</strong> sheet tab.', 'Columns: name, owner, start_date, end_date, status, brief_link');
+    return placeholder('📅', 'No campaigns yet.');
   }
   return `
     <div class="table-wrap">
