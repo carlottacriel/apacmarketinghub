@@ -64,6 +64,19 @@
     .filter-select:hover,.filter-select:focus{border-color:var(--green)}
     #result-count{font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap}
 
+    /* Multi-select tactic dropdown */
+    .multi-select-wrap{position:relative}
+    .multi-select-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;cursor:pointer;white-space:nowrap;outline:none;transition:border-color .15s}
+    .multi-select-btn:hover,.multi-select-btn:focus{border-color:var(--green)}
+    .multi-select-btn .msd-badge{background:var(--green);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700}
+    .multi-select-dropdown{position:absolute;top:calc(100% + 4px);left:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 4px;z-index:50;min-width:230px;box-shadow:0 4px 16px var(--shadow);display:none;max-height:280px;overflow-y:auto}
+    .multi-select-dropdown.open{display:block}
+    .msd-item{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px;color:var(--text);width:100%}
+    .msd-item:hover{background:var(--surface2)}
+    .msd-item input[type=checkbox]{accent-color:var(--green);cursor:pointer;flex-shrink:0}
+    .msd-clear{display:block;width:calc(100% - 12px);margin:4px 6px 2px;padding:4px 8px;font-size:11px;color:var(--muted);background:none;border:none;border-top:1px solid var(--border);cursor:pointer;text-align:left;padding-top:6px}
+    .msd-clear:hover{color:var(--green)}
+
     /* Wrapper */
     .wrapper{flex:1;display:flex;overflow:hidden}
 
@@ -188,24 +201,31 @@
       <option>🔁 In Progress</option>
       <option>❌ Cancelled</option>
     </select>
-    <select id="filter-tactic" class="filter-select" onchange="onSearchFilter()">
-      <option value="">All Tactic Types</option>
-      <option>ABM</option>
-      <option>Blog Post</option>
-      <option>Case Study</option>
-      <option>Conference</option>
-      <option>Content Boost (Paid/Social)</option>
-      <option>Event - IRL</option>
-      <option>Gated Content (ebook/whitepaper/website)</option>
-      <option>Marketing Campaign</option>
-      <option>Other</option>
-      <option>Podcast/Video</option>
-      <option>PR</option>
-      <option>Sales Micro Event</option>
-      <option>Scaled Demand Gen</option>
-      <option>Sponsorship</option>
-      <option>Webinar/Virtual Event</option>
-    </select>
+    <div class="multi-select-wrap" id="tactic-multi-wrap">
+      <button class="multi-select-btn" id="tactic-multi-btn" type="button" onclick="toggleTacticDropdown(event)">
+        <span id="tactic-btn-label">All Tactic Types</span>
+        <span class="msd-badge" id="tactic-count-badge" style="display:none"></span>
+        ▾
+      </button>
+      <div class="multi-select-dropdown" id="tactic-dropdown">
+        <label class="msd-item"><input type="checkbox" value="ABM" onchange="onTacticChange()"> ABM</label>
+        <label class="msd-item"><input type="checkbox" value="Blog Post" onchange="onTacticChange()"> Blog Post</label>
+        <label class="msd-item"><input type="checkbox" value="Case Study" onchange="onTacticChange()"> Case Study</label>
+        <label class="msd-item"><input type="checkbox" value="Conference" onchange="onTacticChange()"> Conference</label>
+        <label class="msd-item"><input type="checkbox" value="Content Boost (Paid/Social)" onchange="onTacticChange()"> Content Boost (Paid/Social)</label>
+        <label class="msd-item"><input type="checkbox" value="Event - IRL" onchange="onTacticChange()"> Event - IRL</label>
+        <label class="msd-item"><input type="checkbox" value="Gated Content (ebook/whitepaper/website)" onchange="onTacticChange()"> Gated Content</label>
+        <label class="msd-item"><input type="checkbox" value="Marketing Campaign" onchange="onTacticChange()"> Marketing Campaign</label>
+        <label class="msd-item"><input type="checkbox" value="Other" onchange="onTacticChange()"> Other</label>
+        <label class="msd-item"><input type="checkbox" value="Podcast/Video" onchange="onTacticChange()"> Podcast/Video</label>
+        <label class="msd-item"><input type="checkbox" value="PR" onchange="onTacticChange()"> PR</label>
+        <label class="msd-item"><input type="checkbox" value="Sales Micro Event" onchange="onTacticChange()"> Sales Micro Event</label>
+        <label class="msd-item"><input type="checkbox" value="Scaled Demand Gen" onchange="onTacticChange()"> Scaled Demand Gen</label>
+        <label class="msd-item"><input type="checkbox" value="Sponsorship" onchange="onTacticChange()"> Sponsorship</label>
+        <label class="msd-item"><input type="checkbox" value="Webinar/Virtual Event" onchange="onTacticChange()"> Webinar/Virtual Event</label>
+        <button class="msd-clear" onclick="clearTacticFilter()">Clear selection</button>
+      </div>
+    </div>
     <span id="result-count"></span>
   </div>
 
@@ -288,6 +308,8 @@
         <a class="modal-link" id="m-vault-btn"    href="#" target="_blank">🔗 Vault</a>
         <a class="modal-link" id="m-sf-btn"       href="#" target="_blank">☁️ Salesforce</a>
         <a class="modal-link" id="m-resource-btn" href="#" target="_blank">🔗 Resource Link</a>
+        <button class="modal-link" id="m-cal-ics" onclick="downloadICS()">📅 Add to Calendar</button>
+        <a class="modal-link" id="m-cal-gcal" href="#" target="_blank" rel="noopener">🗓 Google Cal</a>
         <button class="modal-close" onclick="closeModal()">Close</button>
       </div>
       <div class="modal-info-from" id="m-info-from"></div>
@@ -399,7 +421,7 @@ let allEvents    = [];
 let activeFilter = 'ALL';
 let searchQuery  = '';
 let statusFilter = '';
-let tacticFilter = '';
+let tacticFilters = new Set(); // multi-select; empty = all
 let calendarInstance = null;
 
 // ── Theme ────────────────────────────────────────────────────────
@@ -410,7 +432,7 @@ function applyTheme(mode) {
   if (calendarInstance) calendarInstance.render();
 }
 function toggleTheme() { applyTheme(document.body.classList.contains('light') ? 'dark' : 'light'); }
-(function(){ const s = localStorage.getItem('apac-theme'); if (s === 'light') applyTheme('light'); })();
+(function(){ const s = localStorage.getItem('apac-theme'); applyTheme(s || 'light'); })();
 
 // ── Helpers ──────────────────────────────────────────────────────
 function parseDate(raw) {
@@ -579,7 +601,7 @@ function filteredEvents() {
   return allEvents.filter(ev => {
     if (activeFilter !== 'ALL' && ev.country !== activeFilter) return false;
     if (statusFilter && ev.status !== statusFilter) return false;
-    if (tacticFilter && ev.tacticType !== tacticFilter) return false;
+    if (tacticFilters.size > 0 && !tacticFilters.has(ev.tacticType)) return false;
     if (q) {
       const haystack = [ev.title, ev.champion, ev.tacticType, ev.agency, ev.sourceChannel, ev.notes].join(' ').toLowerCase();
       if (!haystack.includes(q)) return false;
@@ -599,9 +621,44 @@ function setFilter(f) {
 function onSearchFilter() {
   searchQuery  = document.getElementById('search-input').value;
   statusFilter = document.getElementById('filter-status').value;
-  tacticFilter = document.getElementById('filter-tactic').value;
   refreshViews();
 }
+
+function toggleTacticDropdown(e) {
+  e.stopPropagation();
+  document.getElementById('tactic-dropdown').classList.toggle('open');
+}
+
+function onTacticChange() {
+  tacticFilters = new Set(
+    [...document.querySelectorAll('#tactic-dropdown input[type=checkbox]:checked')].map(cb => cb.value)
+  );
+  const count = tacticFilters.size;
+  const badge = document.getElementById('tactic-count-badge');
+  const label = document.getElementById('tactic-btn-label');
+  if (count === 0) {
+    label.textContent = 'All Tactic Types';
+    badge.style.display = 'none';
+  } else if (count === 1) {
+    label.textContent = [...tacticFilters][0];
+    badge.style.display = 'none';
+  } else {
+    label.textContent = 'Tactic Types';
+    badge.textContent = count;
+    badge.style.display = '';
+  }
+  refreshViews();
+}
+
+function clearTacticFilter() {
+  document.querySelectorAll('#tactic-dropdown input[type=checkbox]').forEach(cb => cb.checked = false);
+  onTacticChange();
+}
+
+// Close tactic dropdown when clicking outside
+document.addEventListener('click', () => {
+  document.getElementById('tactic-dropdown')?.classList.remove('open');
+});
 
 function refreshViews() {
   const evs = filteredEvents();
@@ -620,7 +677,7 @@ function toFcEvent(ev) {
     id: ev.title + ev.date,
     title: ev.title,
     start: ev.date,
-    end: ev.end || undefined,
+    // end intentionally omitted — only start date shown on calendar; full dates visible on click
     backgroundColor: countryFc(ev.country),
     borderColor:     countryFc(ev.country),
     textColor: '#fff',
@@ -686,6 +743,7 @@ function setField(id, val) {
 }
 
 function openModal(ev) {
+  _currentModalEvent = ev;
   const c = ev.country || 'APAC';
   document.getElementById('modal-bar').style.background = countryColor(c);
   document.getElementById('m-title').textContent = ev.title;
@@ -738,6 +796,9 @@ function openModal(ev) {
   showLink('m-sf-btn',       ev.sfLink);
   showLink('m-resource-btn', ev.resourceUrl);
 
+  // Add to Calendar buttons (always shown)
+  document.getElementById('m-cal-gcal').href = googleCalendarUrl(ev);
+
   // Info from (muted footer)
   const infoEl = document.getElementById('m-info-from');
   infoEl.textContent = ev.informationFrom ? `Source: ${ev.informationFrom}` : '';
@@ -753,6 +814,63 @@ function closeModal(e) {
 
 function comingSoon(name) {
   alert(`${name} Content Hub is coming soon!\n\nWill be maintained by the ${name} team.`);
+}
+
+// ── Add to Calendar ───────────────────────────────────────────────
+let _currentModalEvent = null; // set when modal opens
+
+function icsDate(d) { return d ? d.replace(/-/g, '') : null; }
+
+function downloadICS() {
+  const ev = _currentModalEvent;
+  if (!ev) return;
+  const start = icsDate(ev.date);
+  // For ICS all-day end, use day after end date (or start + 1 day)
+  const endDate = ev.end ? ev.end : ev.date;
+  const endDateObj = new Date(endDate + 'T00:00:00');
+  endDateObj.setDate(endDateObj.getDate() + 1);
+  const end = endDateObj.toISOString().slice(0, 10).replace(/-/g, '');
+
+  const desc = [ev.tacticType, ev.champion, ev.notes]
+    .filter(Boolean).join(' | ').replace(/[,;\\]/g, ' ');
+
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//APAC Marketing Hub//EN',
+    'BEGIN:VEVENT',
+    `DTSTART;VALUE=DATE:${start}`,
+    `DTEND;VALUE=DATE:${end}`,
+    `SUMMARY:${ev.title.replace(/[,;\\]/g, ' ')}`,
+    desc ? `DESCRIPTION:${desc}` : '',
+    ev.location ? `LOCATION:${ev.location.replace(/[,;\\]/g, ' ')}` : '',
+    `STATUS:${ev.status.includes('Cancel') ? 'CANCELLED' : 'CONFIRMED'}`,
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].filter(Boolean).join('\r\n');
+
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `${ev.title.slice(0, 60).replace(/[^\w\s\-]/g, '').trim()}.ics`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function googleCalendarUrl(ev) {
+  const fmt = d => d.replace(/-/g, '');
+  const start = fmt(ev.date);
+  const end   = ev.end ? fmt(ev.end) : start;
+  const desc  = [ev.tacticType, ev.champion, ev.notes].filter(Boolean).join(' | ');
+  const p = new URLSearchParams({
+    action:   'TEMPLATE',
+    text:     ev.title,
+    dates:    `${start}/${end}`,
+    details:  desc,
+    location: ev.location || '',
+  });
+  return `https://calendar.google.com/calendar/render?${p}`;
 }
 
 // ── Init ──────────────────────────────────────────────────────────
