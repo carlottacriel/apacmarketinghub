@@ -149,6 +149,20 @@
     .modal-close{margin-left:auto;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s}
     .modal-close:hover{border-color:var(--text);color:var(--text)}
     .modal-info-from{font-size:11px;color:var(--muted);margin-top:10px;font-style:italic}
+
+    /* Multi-select tactic dropdown */
+    .multi-select{position:relative}
+    .multi-trigger{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;cursor:pointer;outline:none;white-space:nowrap;min-width:150px;max-width:200px;transition:border-color .15s}
+    .multi-trigger:hover,.multi-trigger.has-selection{border-color:var(--green);color:var(--green)}
+    .multi-trigger span{overflow:hidden;text-overflow:ellipsis;flex:1;text-align:left}
+    .multi-caret{font-size:9px;flex-shrink:0}
+    .multi-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:50;background:var(--surface);border:1px solid var(--border);border-radius:6px;box-shadow:0 4px 16px var(--shadow);padding:6px;min-width:230px;max-height:260px;overflow-y:auto}
+    .multi-dropdown.open{display:block}
+    .multi-opt{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:4px;font-size:12px;cursor:pointer;color:var(--text)}
+    .multi-opt:hover{background:var(--surface2)}
+    .multi-opt input[type=checkbox]{accent-color:var(--green);cursor:pointer;width:13px;height:13px;flex-shrink:0}
+    .multi-clear{display:block;width:100%;padding:5px 8px;border-radius:4px;border:none;background:transparent;color:var(--muted);font-size:11px;cursor:pointer;text-align:left;border-top:1px solid var(--border);margin-top:4px;padding-top:8px}
+    .multi-clear:hover{color:var(--text)}
   </style>
 </head>
 <body>
@@ -193,26 +207,31 @@
       <option>🔁 In Progress</option>
       <option>❌ Cancelled</option>
     </select>
-    <select id="filter-tactic" class="filter-select" onchange="onSearchFilter()">
-      <option value="">All Tactic Types</option>
-      <option>ABM</option>
-      <option>Blog Post</option>
-      <option>Case Study</option>
-      <option>Conference</option>
-      <option>Contact Us</option>
-      <option>Content Boost (Paid/Social)</option>
-      <option>Event - IRL</option>
-      <option>Executive Post</option>
-      <option>Gated Content (ebook/whitepaper/website)</option>
-      <option>Marketing Campaign</option>
-      <option>Other</option>
-      <option>Podcast/Video</option>
-      <option>PR</option>
-      <option>Sales Micro Event</option>
-      <option>Scaled Demand Gen</option>
-      <option>Sponsorship</option>
-      <option>Webinar/Virtual Event</option>
-    </select>
+    <div class="multi-select" id="tactic-multi">
+      <button class="multi-trigger" id="tactic-trigger" onclick="toggleTacticDropdown(event)">
+        <span id="tactic-label">All Tactic Types</span><span class="multi-caret">▾</span>
+      </button>
+      <div class="multi-dropdown" id="tactic-dropdown">
+        <label class="multi-opt"><input type="checkbox" value="ABM" onchange="onTacticChange()"> ABM</label>
+        <label class="multi-opt"><input type="checkbox" value="Blog Post" onchange="onTacticChange()"> Blog Post</label>
+        <label class="multi-opt"><input type="checkbox" value="Case Study" onchange="onTacticChange()"> Case Study</label>
+        <label class="multi-opt"><input type="checkbox" value="Conference" onchange="onTacticChange()"> Conference</label>
+        <label class="multi-opt"><input type="checkbox" value="Contact Us" onchange="onTacticChange()"> Contact Us</label>
+        <label class="multi-opt"><input type="checkbox" value="Content Boost (Paid/Social)" onchange="onTacticChange()"> Content Boost (Paid/Social)</label>
+        <label class="multi-opt"><input type="checkbox" value="Event - IRL" onchange="onTacticChange()"> Event - IRL</label>
+        <label class="multi-opt"><input type="checkbox" value="Executive Post" onchange="onTacticChange()"> Executive Post</label>
+        <label class="multi-opt"><input type="checkbox" value="Gated Content (ebook/whitepaper/website)" onchange="onTacticChange()"> Gated Content</label>
+        <label class="multi-opt"><input type="checkbox" value="Marketing Campaign" onchange="onTacticChange()"> Marketing Campaign</label>
+        <label class="multi-opt"><input type="checkbox" value="Other" onchange="onTacticChange()"> Other</label>
+        <label class="multi-opt"><input type="checkbox" value="Podcast/Video" onchange="onTacticChange()"> Podcast/Video</label>
+        <label class="multi-opt"><input type="checkbox" value="PR" onchange="onTacticChange()"> PR</label>
+        <label class="multi-opt"><input type="checkbox" value="Sales Micro Event" onchange="onTacticChange()"> Sales Micro Event</label>
+        <label class="multi-opt"><input type="checkbox" value="Scaled Demand Gen" onchange="onTacticChange()"> Scaled Demand Gen</label>
+        <label class="multi-opt"><input type="checkbox" value="Sponsorship" onchange="onTacticChange()"> Sponsorship</label>
+        <label class="multi-opt"><input type="checkbox" value="Webinar/Virtual Event" onchange="onTacticChange()"> Webinar/Virtual Event</label>
+        <button class="multi-clear" onclick="clearTacticFilter()">✕ Clear selection</button>
+      </div>
+    </div>
     <span id="result-count"></span>
   </div>
 
@@ -302,6 +321,8 @@
         <a class="modal-link" id="m-vault-btn"    href="#" target="_blank">🔗 Vault</a>
         <a class="modal-link" id="m-sf-btn"       href="#" target="_blank">☁️ Salesforce</a>
         <a class="modal-link" id="m-resource-btn" href="#" target="_blank">🔗 Resource Link</a>
+        <button class="modal-link" id="m-ics-btn" onclick="downloadICS()">📅 Add to Calendar</button>
+        <a class="modal-link" id="m-gcal-btn" href="#" target="_blank">🗓 Google Calendar</a>
         <button class="modal-close" onclick="closeModal()">Close</button>
       </div>
       <div class="modal-info-from" id="m-info-from"></div>
@@ -460,11 +481,11 @@ const FALLBACK_DATA = [
 
 // ── State ────────────────────────────────────────────────────────
 let allEvents    = [];
-let activeFilter = 'ALL';
-let searchQuery  = '';
-let statusFilter = '';
-let tacticFilter = '';
-let sourceFilter = '';
+let activeFilter  = 'ALL';
+let searchQuery   = '';
+let statusFilter  = '';
+let tacticFilters = [];   // multi-select array
+let sourceFilter  = '';
 let calendarInstance = null;
 
 // ── Theme ────────────────────────────────────────────────────────
@@ -475,7 +496,7 @@ function applyTheme(mode) {
   if (calendarInstance) calendarInstance.render();
 }
 function toggleTheme() { applyTheme(document.body.classList.contains('light') ? 'dark' : 'light'); }
-(function(){ const s = localStorage.getItem('apac-theme'); if (s === 'light') applyTheme('light'); })();
+(function(){ const s = localStorage.getItem('apac-theme'); applyTheme(s || 'light'); })();
 
 // ── Helpers ──────────────────────────────────────────────────────
 function parseDate(raw) {
@@ -617,7 +638,7 @@ function filteredEvents() {
   return allEvents.filter(ev => {
     if (activeFilter !== 'ALL' && ev.country !== activeFilter) return false;
     if (statusFilter && ev.status !== statusFilter) return false;
-    if (tacticFilter && ev.tacticType !== tacticFilter) return false;
+    if (tacticFilters.length > 0 && !tacticFilters.includes(ev.tacticType)) return false;
     if (sourceFilter) {
       if (sourceFilter === 'other' && (ev.sourceChannel === 'Shopify Owned' || ev.sourceChannel === 'Partner-Led')) return false;
       else if (sourceFilter !== 'other' && ev.sourceChannel !== sourceFilter) return false;
@@ -649,9 +670,30 @@ function setFilter(f) {
 function onSearchFilter() {
   searchQuery  = document.getElementById('search-input').value;
   statusFilter = document.getElementById('filter-status').value;
-  tacticFilter = document.getElementById('filter-tactic').value;
   refreshViews();
 }
+
+function toggleTacticDropdown(e) {
+  e.stopPropagation();
+  document.getElementById('tactic-dropdown').classList.toggle('open');
+}
+function onTacticChange() {
+  tacticFilters = Array.from(document.querySelectorAll('#tactic-dropdown input[type=checkbox]:checked')).map(c => c.value);
+  const btn = document.getElementById('tactic-trigger');
+  const lbl = document.getElementById('tactic-label');
+  if (tacticFilters.length === 0) { lbl.textContent = 'All Tactic Types'; btn.classList.remove('has-selection'); }
+  else if (tacticFilters.length === 1) { lbl.textContent = tacticFilters[0]; btn.classList.add('has-selection'); }
+  else { lbl.textContent = `${tacticFilters.length} types`; btn.classList.add('has-selection'); }
+  refreshViews();
+}
+function clearTacticFilter() {
+  document.querySelectorAll('#tactic-dropdown input[type=checkbox]').forEach(c => c.checked = false);
+  tacticFilters = [];
+  document.getElementById('tactic-label').textContent = 'All Tactic Types';
+  document.getElementById('tactic-trigger').classList.remove('has-selection');
+  refreshViews();
+}
+document.addEventListener('click', () => { const d = document.getElementById('tactic-dropdown'); if (d) d.classList.remove('open'); });
 
 function refreshViews() {
   const evs = filteredEvents();
@@ -668,9 +710,8 @@ function toFcEvent(ev) {
   const order = (COUNTRY_CONFIG[ev.country] || COUNTRY_CONFIG.APAC).order;
   return {
     id: ev.title + ev.date,
-    title: ev.title,
+    title: (ev.partnerLed && !ev.title.startsWith('Partner:')) ? 'Partner: ' + ev.title : ev.title,
     start: ev.date,
-    end: ev.end || undefined,
     backgroundColor: countryFc(ev.country),
     borderColor:     countryFc(ev.country),
     textColor: '#fff',
@@ -744,7 +785,45 @@ function setField(id, val) {
   else { el.textContent = '—'; el.className = 'modal-field-val empty'; }
 }
 
+let currentModalEvent = null;
+
+function googleCalUrl(ev) {
+  const fmt = d => (d || '').replace(/-/g,'');
+  const s = fmt(ev.date);
+  const e = ev.end ? fmt(ev.end) : s;
+  const p = new URLSearchParams({
+    action:'TEMPLATE', text: ev.title,
+    dates:`${s}/${e}`,
+    details:[ev.tacticType, ev.champion, ev.notes].filter(Boolean).join(' · '),
+    location: ev.location || '',
+  });
+  return `https://calendar.google.com/calendar/render?${p}`;
+}
+
+function downloadICS() {
+  if (!currentModalEvent) return;
+  const ev = currentModalEvent;
+  const fmt = d => (d||'').replace(/-/g,'');
+  const s = fmt(ev.date), e = ev.end ? fmt(ev.end) : s;
+  const esc = v => (v||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+  const lines = [
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//APAC Marketing Hub//EN',
+    'BEGIN:VEVENT',
+    `DTSTART;VALUE=DATE:${s}`,`DTEND;VALUE=DATE:${e}`,
+    `SUMMARY:${esc(ev.title)}`,
+    `DESCRIPTION:${esc([ev.tacticType, ev.champion, ev.notes].filter(Boolean).join(' | '))}`,
+    `LOCATION:${esc(ev.location)}`,
+    'END:VEVENT','END:VCALENDAR',
+  ];
+  const blob = new Blob([lines.join('\r\n')], {type:'text/calendar'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url;
+  a.download = `${(ev.title||'event').replace(/[^a-z0-9]/gi,'_').slice(0,60)}.ics`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
 function openModal(ev) {
+  currentModalEvent = ev;
   const c = ev.country || 'APAC';
   document.getElementById('modal-bar').style.background = countryColor(c);
   document.getElementById('m-title').textContent = ev.title;
@@ -796,6 +875,9 @@ function openModal(ev) {
   showLink('m-vault-btn',    ev.vault);
   showLink('m-sf-btn',       ev.sfLink);
   showLink('m-resource-btn', ev.resourceUrl);
+
+  // Add to Calendar buttons (always shown)
+  document.getElementById('m-gcal-btn').href = googleCalUrl(ev);
 
   // Info from (muted footer)
   const infoEl = document.getElementById('m-info-from');
