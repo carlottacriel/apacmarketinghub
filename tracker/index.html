@@ -638,7 +638,7 @@ function filteredEvents() {
   return allEvents.filter(ev => {
     if (activeFilter !== 'ALL' && ev.country !== activeFilter) return false;
     if (statusFilter && ev.status !== statusFilter) return false;
-    if (tacticFilters.length > 0 && !tacticFilters.includes(ev.tacticType)) return false;
+    if (tacticFilters.length > 0 && !tacticFilters.some(f => f.toLowerCase() === (ev.tacticType||'').toLowerCase())) return false;
     if (sourceFilter) {
       if (sourceFilter === 'other' && (ev.sourceChannel === 'Shopify Owned' || ev.sourceChannel === 'Partner-Led')) return false;
       else if (sourceFilter !== 'other' && ev.sourceChannel !== sourceFilter) return false;
