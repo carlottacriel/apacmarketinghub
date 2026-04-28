@@ -581,13 +581,16 @@ function rowToEvent(r) {
 
   const parsed    = parseDate(dateStart) || parseDate(dateEnd);
   const parsedEnd = dateEnd ? parseDate(dateEnd) : null;
+  const hasNoUsableDate = !parsed && !parsedEnd;
 
   const isTbdDate = /^tbd$/i.test(dateStart);
   const isFuzzy   = /^\d+\/\?/.test(dateStart);
-  const needsTbdPrefix = isTbdDate || isFuzzy || status === '⏳ TBD';
+  const needsTbdPrefix = isTbdDate || isFuzzy || status === '⏳ TBD' || hasNoUsableDate;
 
-  // Use placeholder date for purely undated TBD events so they appear on calendar
-  const effectiveStart = parsed ? parsed.start : (isTbdDate ? '2026-12-31' : null);
+  // Use placeholder date for undated rows so they still appear in the tracker.
+  const effectiveStart = parsed
+    ? parsed.start
+    : (parsedEnd ? parsedEnd.start : ((isTbdDate || hasNoUsableDate) ? '2026-12-31' : null));
   if (!effectiveStart) return null;
 
   // Only show time if it's a valid HH:MM pattern
@@ -595,7 +598,7 @@ function rowToEvent(r) {
 
   return {
     title:          needsTbdPrefix ? `(TBD) ${actName}` : actName,
-    rawDate:        dateStart + (dateEnd ? ` – ${dateEnd}` : ''),
+    rawDate:        [dateStart, dateEnd].filter(Boolean).join(' – ') || 'TBD',
     date:           effectiveStart,
     end:            (parsedEnd ? parsedEnd.start : (parsed && parsed.end)) || undefined,
     time,
