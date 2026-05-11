@@ -33,11 +33,10 @@ const CONFIG = {
   MASTER_SHEET_ID: '1iXiwUD4TMb-37LsE-rTgfPsUMQ0BOa5bexxMNi8HamA',
 
   // ── Apps Script Web App URL ────────────────────────────────────────────────
-  // SOURCE OF TRUTH for the Org Chart. Paste your deployed Web App URL here.
-  // How to deploy: open your Google Sheet → Extensions → Apps Script →
-  //   paste appsscript/Code.gs → Deploy → New deployment → Web App →
+  // SOURCE OF TRUTH when set: Org Chart + tactic tracker calendar (tab NEW_Calendar_TEMPLATE).
+  // Without it, the tracker uses “Publish to web” CSV, which can lag or return login HTML.
+  // Deploy: Sheet → Extensions → Apps Script → paste appsscript/Code.gs → Deploy → Web App →
   //   Execute as: Me  |  Who has access: Anyone → Copy URL → paste below.
-  // Once set, the Org Chart updates automatically when you edit the sheet.
   APPS_SCRIPT_URL: '',
 
   // ── Slack Channels ─────────────────────────────────────────────────────────

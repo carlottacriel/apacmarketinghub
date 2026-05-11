@@ -330,12 +330,15 @@
   </div>
 </div>
 
+<script src="../config.js"></script>
 <script>
 // ── Config ───────────────────────────────────────────────────────
+// Tab `NEW_Calendar_TEMPLATE` has sheetId 1307705760 (same as gid in the Sheet URL).
 const SHEET_ID  = '1iXiwUD4TMb-37LsE-rTgfPsUMQ0BOa5bexxMNi8HamA';
 const SHEET_GID = '1307705760';
+const TACTICS_TAB_NAME = 'NEW_Calendar_TEMPLATE';
 const CSV_URL   = `https://docs.google.com/spreadsheets/d/e/2PACX-1vQMju6QKvpqrp-AlTfnLPFvJGZbsasceFrPNtOvdlVhA4NzhWOaO3LQ4ry_sow1LG27B7Y8a4Ki-_Vk/pub?gid=${SHEET_GID}&single=true&output=csv`;
-const LAST_UPDATED = 'Apr 24, 2026';
+const LAST_UPDATED = 'May 11, 2026';
 
 const COUNTRY_CONFIG = {
   ANZ:  { color:'#fb923c', fc:'#ea580c', label:'🇦🇺 ANZ',      badge:'badge-anz', order:0 },
@@ -629,21 +632,63 @@ function csvToEvents(rows) {
   return rows.slice(1).map(r => rowToEvent(r)).filter(Boolean);
 }
 
+// ── Apps Script → same shape as Papa CSV (header row + arrays) ────
+function appsRowsToMatrix(rows) {
+  if (!rows || !rows.length) return [];
+  const headers = Object.keys(rows[0]);
+  return [headers, ...rows.map(o => headers.map(h => (o[h] != null ? String(o[h]) : '')))];
+}
+
+async function loadFromAppsScript() {
+  const base = typeof CONFIG !== 'undefined' && CONFIG.APPS_SCRIPT_URL && String(CONFIG.APPS_SCRIPT_URL).trim();
+  if (!base) return null;
+  try {
+    const url = `${base.trim()}?action=cms&sheet=${encodeURIComponent(TACTICS_TAB_NAME)}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (!json.ok || !json.data || json.data.error) return null;
+    const rows = json.data.rows;
+    if (!rows || !rows.length) return null;
+    const matrix = appsRowsToMatrix(rows);
+    const events = csvToEvents(matrix);
+    return events.length ? events : null;
+  } catch (e) {
+    console.warn('Apps Script fetch failed:', e.message);
+    return null;
+  }
+}
+
 // ── Load data ────────────────────────────────────────────────────
 async function loadData() {
   setSyncState('loading', 'Loading from APAC Marketing Calendar…');
+
+  const fromScript = await loadFromAppsScript();
+  if (fromScript) {
+    allEvents = fromScript;
+    setSyncState('ok', `Live data (sheet API) — ${allEvents.length} activities · ${new Date().toLocaleTimeString()}`);
+    updateStats();
+    onSearchFilter();
+    return;
+  }
+
   try {
-    const res = await fetch(CSV_URL);
+    const sep = CSV_URL.includes('?') ? '&' : '?';
+    const url = `${CSV_URL}${sep}_cb=${Date.now()}`;
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
+    if (/^\s*</.test(text) || text.includes('<!DOCTYPE')) {
+      throw new Error('CSV URL returned HTML (login or expired publish link). Deploy Apps Script URL in config.js or republish the sheet.');
+    }
     const parsed = Papa.parse(text, { skipEmptyLines: true });
     const events = csvToEvents(parsed.data);
-    if (events.length < 3) throw new Error('Too few rows');
+    if (events.length < 1) throw new Error('No calendar rows parsed');
     allEvents = events;
-    setSyncState('ok', `Live data — ${events.length} activities · Last synced ${new Date().toLocaleTimeString()}`);
-  } catch(e) {
+    setSyncState('ok', `Live data (published CSV) — ${events.length} activities · ${new Date().toLocaleTimeString()}`);
+  } catch (e) {
     allEvents = FALLBACK_DATA.map(r => rowToEvent(r)).filter(Boolean);
-    setSyncState('err', `Showing ${allEvents.length} cached activities · Last updated: ${LAST_UPDATED}`);
+    setSyncState('err', `Showing ${allEvents.length} offline snapshot · ${LAST_UPDATED}. Fix: set APPS_SCRIPT_URL in config.js, or File → Share → Publish to web for this spreadsheet. (${e.message})`);
     console.warn('Sheet fetch failed:', e.message);
   }
   updateStats();
