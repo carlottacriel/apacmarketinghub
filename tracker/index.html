@@ -506,6 +506,108 @@ function appsRowsToMatrix(rows) {
   return [headers, ...rows.map(o => headers.map(h => (o[h] != null ? String(o[h]) : '')))];
 }
 
+/** Spreadsheet ID (same as Source of Truth URL). */
+function masterSheetId() {
+  return (typeof CONFIG !== 'undefined' && CONFIG.MASTER_SHEET_ID) ? CONFIG.MASTER_SHEET_ID : SHEET_ID;
+}
+
+/**
+ * Load via Google Visualization API (script tag). Sends your Google cookies, so it works when
+ * published CSV redirects to login (302) but fetch cannot. Still fails if you have no access.
+ */
+function loadViaGvizJsonp() {
+  const docId = masterSheetId();
+  const gid = SHEET_GID;
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('Timed out waiting for Google sheet'));
+    }, 28000);
+
+    let script = null;
+    const prevSetResponse =
+      window.google &&
+      window.google.visualization &&
+      window.google.visualization.Query &&
+      window.google.visualization.Query.setResponse;
+
+    function cleanup() {
+      clearTimeout(timer);
+      if (script && script.parentNode) script.remove();
+      if (window.google && window.google.visualization && window.google.visualization.Query) {
+        window.google.visualization.Query.setResponse = prevSetResponse;
+      }
+    }
+
+    window.google = window.google || {};
+    window.google.visualization = window.google.visualization || {};
+    window.google.visualization.Query = window.google.visualization.Query || {};
+    window.google.visualization.Query.setResponse = function (resp) {
+      cleanup();
+      try {
+        if (!resp) {
+          reject(new Error('Empty GViz response'));
+          return;
+        }
+        if (resp.status === 'error') {
+          const msg = resp.errors && resp.errors[0] ? (resp.errors[0].detailed_message || resp.errors[0].message) : 'GViz error';
+          reject(new Error(msg));
+          return;
+        }
+        if (!resp.table || !resp.table.rows) {
+          resolve([]);
+          return;
+        }
+        const matrix = gvizTableToMatrix(resp.table);
+        resolve(csvToEvents(matrix));
+      } catch (err) {
+        reject(err);
+      }
+    };
+
+    const tq = encodeURIComponent('SELECT A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V');
+    script = document.createElement('script');
+    script.src = `https://docs.google.com/spreadsheets/d/${docId}/gviz/tq?tqx=out:json&gid=${gid}&tq=${tq}`;
+    script.onerror = () => {
+      cleanup();
+      reject(new Error('Could not load GViz script (blocked or no access)'));
+    };
+    document.head.appendChild(script);
+  });
+}
+
+function gvizTableToMatrix(table) {
+  const nCols = table.cols.length;
+  const headers = table.cols.map(c => (c.label != null ? String(c.label) : '').trim());
+  const matrix = [headers];
+  for (const row of table.rows) {
+    const out = new Array(nCols).fill('');
+    if (!row.c) continue;
+    for (let i = 0; i < nCols; i++) {
+      const cell = row.c[i];
+      out[i] = gvizCellToString(cell);
+    }
+    matrix.push(out);
+  }
+  return matrix;
+}
+
+function gvizCellToString(cell) {
+  if (!cell) return '';
+  if (cell.f != null && String(cell.f).trim() !== '') return String(cell.f).trim();
+  const v = cell.v;
+  if (v == null) return '';
+  if (typeof v === 'number') {
+    if (v > 20000 && v < 80000) {
+      const epoch = Date.UTC(1899, 11, 30);
+      const d = new Date(epoch + v * 86400000);
+      if (!Number.isNaN(d.getTime())) return `${d.getUTCMonth() + 1}/${d.getUTCDate()}/${d.getUTCFullYear()}`;
+    }
+    return String(v);
+  }
+  return String(v);
+}
+
 /** Returns undefined if Apps Script not configured or request failed; [] if sheet has no data rows. */
 async function loadFromAppsScript() {
   const base = typeof CONFIG !== 'undefined' && CONFIG.APPS_SCRIPT_URL && String(CONFIG.APPS_SCRIPT_URL).trim();
@@ -545,6 +647,7 @@ async function loadData() {
     return;
   }
 
+  let csvErr = null;
   try {
     const sep = CSV_URL.includes('?') ? '&' : '?';
     const url = `${CSV_URL}${sep}_cb=${Date.now()}`;
@@ -552,7 +655,7 @@ async function loadData() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
     if (/^\s*</.test(text) || text.includes('<!DOCTYPE')) {
-      throw new Error('CSV URL returned HTML (login or expired publish link). Deploy Apps Script URL in config.js or republish the sheet.');
+      throw new Error('Published CSV returned a login page (publish link revoked or sign-in required).');
     }
     const parsed = Papa.parse(text, { skipEmptyLines: true });
     const events = csvToEvents(parsed.data);
@@ -565,12 +668,26 @@ async function loadData() {
         : `Live data (published CSV) — 0 activities parsed · ${suffix}`
     );
   } catch (e) {
-    allEvents = [];
-    setSyncState(
-      'err',
-      `Could not load calendar (showing nothing). Set APPS_SCRIPT_URL in config.js, or republish the spreadsheet to web. ${e.message}`
-    );
-    console.warn('Sheet fetch failed:', e.message);
+    csvErr = e;
+    console.warn('Published CSV failed:', e.message);
+    try {
+      const events = await loadViaGvizJsonp();
+      allEvents = events;
+      const suffix = `${new Date().toLocaleTimeString()}`;
+      setSyncState(
+        'ok',
+        events.length
+          ? `Live data (Google sheet — use Apps Script for anonymous viewers) — ${events.length} activities · ${suffix}`
+          : `Loaded sheet — 0 activity rows parsed · ${suffix}`
+      );
+    } catch (e2) {
+      allEvents = [];
+      setSyncState(
+        'err',
+        `Calendar could not load. (1) Paste APPS_SCRIPT_URL in config.js and redeploy the hub — best for everyone. (2) Or File → Share → Publish to web → republish and update the pub URL in tracker. (3) Or stay signed into Google in this browser with access to the sheet. CSV: ${csvErr.message} · GViz: ${e2.message}`
+      );
+      console.warn('GViz fallback failed:', e2.message);
+    }
   }
   updateStats();
   onSearchFilter();
