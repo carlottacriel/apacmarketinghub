@@ -30,8 +30,8 @@ const CONFIG = {
   // ── Master Google Sheet ID ─────────────────────────────────────────────────
   // From your Sheet URL: https://docs.google.com/spreadsheets/d/SHEET_ID/edit
   // Run setup/CreateMasterSheet.gs to create this sheet automatically.
-  // Tactic calendar (#tactic-tracker) reads tab NEW_Calendar_TEMPLATE via Apps Script
-  // (see appsscript/Code.gs → TACTICS_TAB_NAME) or GViz/CSV fallbacks in tracker/index.html.
+  // Standalone tracker at tracker/ reads NEW_Calendar_TEMPLATE via Apps Script (Code.gs → TACTICS_TAB_NAME)
+  // or GViz/CSV fallbacks in tracker/index.html. Hub Calendar tab is a placeholder until re-embedded.
   MASTER_SHEET_ID: '1iXiwUD4TMb-37LsE-rTgfPsUMQ0BOa5bexxMNi8HamA',
 
   // ── Apps Script Web App URL ────────────────────────────────────────────────

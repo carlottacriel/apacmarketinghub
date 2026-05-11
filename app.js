@@ -107,7 +107,7 @@ function initNav() {
 const SECTIONS = [
   { id: 'org-chart',            title: 'Org Chart',                      desc: 'APAC team structure & contacts',           icon: '👥' },
   { id: 'account-insights',     title: 'Account Insights',               desc: 'Key accounts & territory links',           icon: '🏢' },
-  { id: 'tactic-tracker',       title: 'Calendar',                       desc: 'Live APAC marketing calendar',             icon: '🗓️' },
+  { id: 'tactic-tracker',       title: 'Calendar',                       desc: 'APAC marketing calendar (rebuilding)',     icon: '🗓️' },
   { id: 'hub-okrs',             title: 'Mktg Strategy + OKRs',           desc: 'OKR progress & planning docs',             icon: '🎯' },
   { id: 'content-repo',         title: 'Content Repository',             desc: 'Decks, templates & assets',               icon: '📁' },
   { id: 'brand-champion',       title: 'Be a Brand Champion',            desc: 'Guidelines, logos & tone of voice',        icon: '✨' },
@@ -166,16 +166,19 @@ function initSearch() {
   });
 }
 
+/** Remove legacy calendar iframe / fallback if present (cached HTML or old deploy). */
+function removeStaleCalendarEmbeds() {
+  document.querySelectorAll('#tactic-tracker iframe, iframe#tracker-iframe').forEach((el) => {
+    try {
+      el.src = 'about:blank';
+    } catch (_) {}
+    el.remove();
+  });
+  document.getElementById('tracker-fallback')?.remove();
+}
+
 function switchTab(tabId, pushState = true) {
-  // If leaving the tracker tab, park the iframe on about:blank so it stops rendering,
-  // and remove it from loadedTabs so the src is re-injected next visit.
-  if (tabId !== 'tactic-tracker') {
-    const iframe = document.getElementById('tracker-iframe');
-    if (iframe && iframe.dataset.src && iframe.src !== 'about:blank' && iframe.src !== '') {
-      iframe.src = 'about:blank';
-      loadedTabs.delete('tactic-tracker');
-    }
-  }
+  if (tabId === 'tactic-tracker') removeStaleCalendarEmbeds();
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('[data-tab]').forEach(el => el.classList.remove('active'));
 
@@ -503,12 +506,16 @@ const TAB_LOADERS = {
       orgLink.href = CONFIG.LINKS.orgChart;
     }
 
-    // Calendar home card navigates to tactic-tracker tab (not an external link)
+    // Calendar home card opens in-hub Calendar tab only (no tracker/ embed or navigation)
     const calCard = document.querySelector('.home-card--cal');
     if (calCard) {
-      calCard.addEventListener('click', e => {
+      const openCal = (e) => {
         e.preventDefault();
         switchTab('tactic-tracker');
+      };
+      calCard.addEventListener('click', openCal);
+      calCard.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') openCal(e);
       });
     }
 
@@ -604,25 +611,6 @@ const TAB_LOADERS = {
     const filtered = data ? data.filter(r => !r.category || r.category.toLowerCase().includes('account')) : null;
     const el = document.getElementById('account-links');
     if (el) el.innerHTML = renderLinkCards(filtered && filtered.length ? filtered : data, '🏢');
-  },
-
-  'tactic-tracker': async () => {
-    // Lazy-load the iframe — only set src when this tab is actually opened
-    const iframe = document.getElementById('tracker-iframe');
-    const fallback = document.getElementById('tracker-fallback');
-    const notLoaded = !iframe.src || iframe.src === 'about:blank' || iframe.src === window.location.href;
-    if (iframe && notLoaded && iframe.dataset.src) {
-      iframe.src = iframe.dataset.src;
-      iframe.addEventListener('load', function onLoad() {
-        iframe.removeEventListener('load', onLoad);
-        try {
-          const doc = iframe.contentDocument || iframe.contentWindow.document;
-          if (!doc || doc.URL === 'about:blank') fallback.style.display = 'flex';
-        } catch(e) {
-          fallback.style.display = 'flex';
-        }
-      }, { once: true });
-    }
   },
 
   'hub-okrs': async () => {
@@ -748,10 +736,7 @@ function initCalendar(data) {
     wrap.innerHTML = `
       <div class="cal-empty">
         <div class="ph-icon">📅</div>
-        <p>View all APAC marketing activities in the full tracker.</p>
-        <a class="btn-primary" href="https://apacmarketinghub.quick.shopify.io/#tactic-tracker" target="_blank" rel="noopener" style="margin-top:14px; display:inline-flex;">
-          Open APAC Marketing Tracker ↗
-        </a>
+        <p>View APAC marketing activities in the standalone tracker when it is linked again.</p>
       </div>`;
     return;
   }
@@ -1009,6 +994,7 @@ window.openTacticModal = openTacticModal;
 
 // ── Init ──────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  removeStaleCalendarEmbeds();
   initNav();
   initSearch();
 
