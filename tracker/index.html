@@ -338,7 +338,6 @@ const SHEET_ID  = '1iXiwUD4TMb-37LsE-rTgfPsUMQ0BOa5bexxMNi8HamA';
 const SHEET_GID = '1307705760';
 const TACTICS_TAB_NAME = 'NEW_Calendar_TEMPLATE';
 const CSV_URL   = `https://docs.google.com/spreadsheets/d/e/2PACX-1vQMju6QKvpqrp-AlTfnLPFvJGZbsasceFrPNtOvdlVhA4NzhWOaO3LQ4ry_sow1LG27B7Y8a4Ki-_Vk/pub?gid=${SHEET_GID}&single=true&output=csv`;
-const LAST_UPDATED = 'May 11, 2026';
 
 const COUNTRY_CONFIG = {
   ANZ:  { color:'#fb923c', fc:'#ea580c', label:'🇦🇺 ANZ',      badge:'badge-anz', order:0 },
@@ -348,139 +347,7 @@ const COUNTRY_CONFIG = {
   APAC: { color:'#8b8fa8', fc:'#6b7280', label:'🌏 APAC-wide', badge:'badge-apac', order:4 },
 };
 
-// ── Fallback data (updated Apr 1, 2026) ──────────────────────────
-// 22-col schema: [status, dateStart, time, dateEnd, name, country, champion,
-//   sourceChannel, tacticType, location, segment, agency, publication,
-//   vault, sfLink, resourceUrl, objective, heroMessage, notes,
-//   channelMix, informationFrom, bpoFollowUp]
-const FALLBACK_DATA = [
-  ["🏁 Complete","1/11/2026","","1/13/2026","NRF ANZ Exec Engagement","🇦🇺 ANZ","Gabby Song","Shopify Owned","Sales Micro Event","NYC","LA, MM","","","https://vault.shopify.io/gsd/projects/48362-NRF-26-AU-Exec-Engagement","","","","","","","Revenue Events",""],
-  ["🏁 Complete","1/29/2026","","","Australian Open Hospitality","🇦🇺 ANZ","Gabby Song","Shopify Owned","Sales Micro Event","Melbourne","LA, MM","","","https://vault.shopify.io/gsd/projects/48035-AU-Australian-Open-Exec-Engagement-Jan-29-2026","","","","","","","Revenue Events",""],
-  ["🏁 Complete","2/13/2026","","","Partner: ECzine Day Session by TIS","🇯🇵 JP","Reisa Matsuda","Partner-Led","Webinar/Virtual Event","","","TIS","","","","","","","","","",""],
-  ["🏁 Complete","2/18/2026","","","Partner: Why Direct 2026 Spring","🇯🇵 JP","Reisa Matsuda","Partner-Led","Event - IRL","","","HuckleBerry","","","","","","","","","",""],
-  ["🏁 Complete","2/19/2026","","","Partner: Weblife Webinar 売上を最大化する\u201cShopifyで勝てる戦略5選\u201d","🇯🇵 JP","Reisa Matsuda","Partner-Led","Webinar/Virtual Event","","","Weblife","","","","","","","","","",""],
-  ["🏁 Complete","2/27/2026","","","Partner: Ecommerce Fair Tokyo 2026_PM-APAC-JP","🇯🇵 JP","Reisa Matsuda","Partner-Led","Sponsorship","","","StoreHero","","","","","","","","","",""],
-  ["🏁 Complete","3/2/2026","","","Partner: The Global Commerce Summit 2026","🇯🇵 JP","Reisa Matsuda","Partner-Led","Event - IRL","","","R6B","","","","","","","","","",""],
-  ["🏁 Complete","3/17/2026","","","AI Campaign — Retail Innovation Forum Lead Gen","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Other","","","","","","","","","","ABMモーションに組み込み済み。日程TBD","","#ai-h1-campaign-jp","✅ "],
-  ["🏁 Complete","3/17/2026","","","AI Webinar 「ECサイト終焉」w/ 奥谷氏 x Tom","🇯🇵 JP","Ayumi Manabe","Shopify Owned","Webinar/Virtual Event","","","","","https://vault.shopify.io/gsd/projects/48826-H1-26-ABM-2-0-Japan-Top-Accounts","","","","","TOFU/ABM; LP: commerce-innovation.jp/webinar/20260317; ~60 RSVPs as of 3/16; 15:00 JST","","#jp-webinar","✅ "],
-  ["🏁 Complete","3/18/2026","","","Partner: The Future of Resale Business on Shopify Plus","🇯🇵 JP","Reisa Matsuda","Partner-Led","Event - IRL","","","Resort, Huckleberry","","","","","","","","","",""],
-  ["🏁 Complete","3/18/2026","","","Partner: Joint Webinar — Future of Resale Business on Shopify Plus","🇯🇵 JP","Reisa Matsuda","Partner-Led","Webinar/Virtual Event","","","Resort","","","","","","","Proposed; verify status with Reisa","","Partner Marketing","✅ "],
-  ["🏁 Complete","3/19/2026","","","AI Campaign — GEO Playbook Blog (Localized)","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Blog Post","","","","","","","","","","ローカライズ完了・社内レビュー済み。チェックリストPDF制作中（Infobahn）","","#ai-h1-campaign-jp",""],
-  ["🏁 Complete","3/19/2026","","","Trust-Building — Case Study - Relive","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Case Study","","","","","","","","","","事例制作。チャンネルなし、手動更新","","No channel (manual)",""],
-  ["🔁 In Progress","3/20/2026","","4/30/2026","AI Webinar 「ECサイト終焉」w/ 奥谷氏 x Tom  On-Demand","🇯🇵 JP","Ayumi Manabe","Shopify Owned","Webinar/Virtual Event","","","","","","","https://commerce-innovation.jp/webinar/20260317_archive","","","","","#jp-webinar","✅ "],
-  ["🏁 Complete","3/23/2026","11:00","","AI Whitepaper Interview Part 1 — 藤原 × 中島聡","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Other","","","","","","","","","","元ユナイテッドアローズ藤原 × 元MS中島聡の対談収録。WP制作用。Ayumi参加予定（オンライン）","","#ai-h1-campaign-jp",""],
-  ["✅ Confirmed","3/24/2026","","","Shopify Connect SYD","🇦🇺 ANZ","Gabby Song","Shopify Owned","Event - IRL","Sydney","LA, MM, SMB","","","https://vault.shopify.io/gsd/projects/48366-AU-Shopify-Connect-Series-SYD-MELB-Q1-2026","","","","","","","Revenue Events",""],
-  ["✅ Confirmed","3/24/2026","","3/25/2026","eTail Asia","🇸🇬 SEA","Carlotta Criel","Shopify Owned","Conference","","","","","","","","","","","","Revenue Events",""],
-  ["✅ Confirmed","3/25/2026","","","Plus Hub — AIテーマ IRL Event (BrainSleep りんごさん、Anker菅野さん他)","🇯🇵 JP","Ayumi Manabe","Shopify Owned","Event - IRL","","","","","","","https://shopify-plushub.commmune.com/view/event/26945","","","AI Sidekick活用事例テーマ; ANKER 菅野さん登壇調整中; 表参道会場","","#jp-plus-hub-squad",""],
-  ["🔄 Planning","3/26/2026","","","Partner: Shopify Ecommerce Summit (Concentrix)","🇸🇬 SEA","Esabelle Koh","Partner-Led","Event - IRL","","MM","Concentrix","","","","","","","Korea-based; 30 expected leads, 2 PQLs","","Partner Marketing",""],
-  ["🏁 Complete","3/30/2026","17:30","","AI Whitepaper Interview Part 2 — 徳丸浩 × 須藤憲司","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Other","","","","","","","","","","テーマ：AI時代の最新技術とセキュリティ。徳丸浩(EGセキュア) × 須藤憲司(Kaizen Platform CEO)","","#ai-h1-campaign-jp",""],
-  ["🏁 Complete","3/31/2026","","","Trust-Building — Case Study - Brain Sleep","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Case Study","","","","","","","","","","事例制作。チャンネルなし、手動更新","","No channel (manual)",""],
-  ["🏁 Complete","3/31/2026","","","Trust-Building — Case Study - Moderato","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Case Study","","","","","","","","","","事例制作。チャンネルなし、手動更新","","No channel (manual)",""],
-  ["🏁 Complete","3/31/2026","","","Trust-Building — Case Study - KURAND","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Case Study","","","","","","","","","","事例制作。チャンネルなし、手動更新","","No channel (manual)",""],
-  ["🔁 In Progress","3/31/2026","","","Trust-Building — SEO blog x 1","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Other","","","","","","","","","","Gartnerとのメールプログラム。チャンネルなし、手動更新","","No channel (manual)",""],
-  ["🔁 In Progress","3/31/2026","","","Trust-Building — SEO blog x 2","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Other","","","","","","","","","","Gartnerとのメールプログラム。チャンネルなし、手動更新","","No channel (manual)",""],
-  ["🔁 In Progress","3/31/2026","","","Trust-Building — SEO blog x 3","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Other","","","","","","","","","","Gartnerとのメールプログラム。チャンネルなし、手動更新","","No channel (manual)",""],
-  ["✅ Confirmed","4/1/2026","","5/30/2026","Partner: Digital Transformation Campaign (The Working Party)","🇦🇺 ANZ","Britta Davies","Partner-Led","Marketing Campaign","","LA, MM","The Working Party","","","","","","","40 exp. leads, 5 PQLs; Q2 TWP flagship campaign","","Partner Marketing",""],
-  ["🔄 Planning","4/1/2026","","6/30/2026","Partner: Fusion 5 — Paid Advertising","🇦🇺 ANZ","Britta Davies","Partner-Led","Content Boost (Paid/Social)","","","PocketSquare / Fusion 5","","","","","","","Proposed; $4K USD","","Partner Marketing",""],
-  ["🔄 Planning","4/1/2026","","5/30/2026","Partner: Fusion 5 — AI Workshopping Session","🇦🇺 ANZ","Britta Davies","Partner-Led","Other","","","PocketSquare / Fusion 5","","","","","","","Proposed; $7K USD","","Partner Marketing",""],
-  ["🔄 Planning","4/1/2026","","6/30/2026","Partner: Aurora Project x Yiguo (GCR)","🇨🇳 GCR","Elise Li","Partner-Led","Marketing Campaign","","MM","Yiguo / Seel / GlobalE / Wati","","","","","","","Proposed; 100 exp. leads, 4 PQLs; $50K USD","","Partner Marketing",""],
-  ["✅ Confirmed","4/2/2026","","","Partner: HK Commerce NEXT (WaveCommerce)","🇨🇳 GCR","Elise Li","Partner-Led","Event - IRL","Hong Kong","MM","MindArc","","","","","","","60 exp. leads, 3 PQLs; $80K total budget","","Partner Marketing",""],
-  ["🔄 Planning","4/3/2026","","","AI Campaign — AI Disoverability Checklist (Localized)","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Blog Post","","","","","","","","","","ローカライズ完了・社内レビュー済み。チェックリストPDF制作中（Infobahn）","","#ai-h1-campaign-jp",""],
-  ["✅ Confirmed","4/7/2026","","","重鎮プロジェクト Vol.2 — EC業界勉強会","🇯🇵 JP","Ayumi Manabe","Shopify Owned","Event - IRL","","","","","","","","","","Quarterly EC industry leader Shopify study group; Vol.2","","#jp-advocator-program",""],
-  ["⏳ TBD","4/8/2026","","","Marketing Week Spring — Seminar Materials Deadline","🇯🇵 JP","Ami Takane","Shopify Owned","Other","Tokyo","","","","","","","","","登壇資料の提出締め切り。全セッション登壇者対応要","","#marketing-week-spring-2026",""],
-  ["✅ Confirmed","4/10/2026","","","AI Webinar for Export Sellers","🇨🇳 GCR","Nadine Coady","Other","Webinar/Virtual Event","","All Merchants","","","","","","","","","","TBC",""],
-  ["🔄 Planning","4/10/2026","","","Trust-Building — Gartner MQ Japanese Report","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Other","","","","","","","","","","Gartnerとのメールプログラム。チャンネルなし、手動更新","","No channel (manual)",""],
-  ["🔄 Planning","4/14/2026","","4/17/2026","CxO Letter 第2弾 — 着弾 (日経クロストレンド同封)","🇯🇵 JP","Ayumi Manabe","Shopify Owned","ABM","","","","","https://vault.shopify.io/gsd/projects/48826-H1-26-ABM-2-0-Japan-Top-Accounts","","","","","Target: LA/MM H・M・L + SMB High; Highは手書き封筒; 日経クロストレンド2月号同封","","#jp-abm-v2",""],
-  ["🔄 Planning","4/14/2026","","4/17/2026","Invitation Gifting Program for 5月 CxO Roundtable — 経営層向け","🇯🇵 JP","Ayumi Manabe","Shopify Owned","ABM","","","Resort / GENIEE","","https://vault.shopify.io/gsd/projects/48826-H1-26-ABM-2-0-Japan-Top-Accounts","","","","","LA High Priority対象; MOFU engagement; 手紙 + ギフト同梱","","#jp-abm-v2",""],
-  ["🔄 Planning","4/15/2026","","5/30/2026","Partner: UnlockLAx36kr Marketing Campaign (Silk)","🇨🇳 GCR","Elise Li","Partner-Led","Marketing Campaign","","LA, MM","Silk","","","","","","","Proposed; 100 exp. leads, 5 PQLs","","Partner Marketing",""],
-  ["🔄 Planning","4/15/2026","","","Partner: Weblife Shopify Roadmap Webinar","","Reisa Matsuda","Partner-Led","Webinar/Virtual Event","","","Weblife","","","","","","","","","",""],
-  ["✅ Confirmed","4/16/2026","","","Partner: AI-Native EC Growth Strategy Webinar (Sidekick × GENIEE CDP)","🇯🇵 JP","Reisa Matsuda","Partner-Led","Webinar/Virtual Event","","","Resort","","","","","","","Joint co-webinar; ABM-relevant — check alignment with JP webinar calendar","","Partner Marketing","✅ "],
-  ["🔄 Planning","4/20/2026","","4/24/2026","CxO Letter 第2弾 — BPO/BDR フォローアップ (コール + メール)","🇯🇵 JP","Ayumi Manabe","Shopify Owned","ABM","","","","","https://vault.shopify.io/gsd/projects/48826-H1-26-ABM-2-0-Japan-Top-Accounts","","","","","GW明けアポ取り目標; 電話 + メールの並行フォロー","","#jp-abm-v2","✅ "],
-  ["✅ Confirmed","4/21/2026","","","Partner: AI Decoded Event (MindArc)","🇦🇺 ANZ","Britta Davies","Partner-Led","Event - IRL","","MM","","","","","","","","8 exp. leads, 2 PQLs","","Partner Marketing",""],
-  ["✅ Confirmed","4/22/2026","","4/23/2026","AI Theme MOF 事例ウェビナー — 生活の木・中村さん登壇","🇯🇵 JP","Ayumi Manabe","Shopify Owned","Webinar/Virtual Event","","","","","","","","","","Sidekick AI活用事例テーマ; 登壇依頼書作成中 (山本さん); 日程TBD","","#jp-webinar","✅ "],
-  ["✅ Confirmed","4/22/2026","","4/24/2026","iMedia Retail Summit Australia 2026","🇦🇺 ANZ","Carlotta Criel","Shopify Owned","Conference","","LA","","","","","","","","","","Revenue Events",""],
-  ["🔁 In Progress","4/22/2026","","","AI Whitepaper AIコマース時代の生存戦略（仮） ","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Other","","","","","","","","","","","","#ai-h1-campaign-jp",""],
-  ["✅ Confirmed","4/22/2026","","","Marketing Week Spring — Booth Day 1","🇯🇵 JP","Ami Takane","Shopify Owned","Conference","Tokyo","","","","","","","","","パートナーブース常駐: Resort + アパレルウェブ。Shopifyスタッフ AM/PMシフト対応","","#marketing-week-spring-2026","✅ "],
-  ["✅ Confirmed","4/23/2026","","4/23/2026","Plus Hub オンラインイベントー新常識！旧お客様アカウント廃止への対応と最新情報","🇯🇵 JP","Ayumi Manabe","Shopify Owned","Webinar/Virtual Event","","X-Sell","","","","","https://shopify-plushub.commmune.com/view/event/27881","","","","","",""],
-  ["🔄 Planning","4/23/2026","","5/18/2026","Partner: ExporterChina Marketing Campaign (MeetSocial)","🇨🇳 GCR","Elise Li","Partner-Led","Marketing Campaign","","MM","MeetSocial","","","","","","","Proposed; 100 exp. leads, 5 PQLs","","Partner Marketing",""],
-  ["✅ Confirmed","4/23/2026","","","Marketing Week Spring — Booth Day 2","🇯🇵 JP","Ami Takane","Shopify Owned","Conference","Tokyo","","","","","","","","","パートナーブース常駐: AMS + HuckleBerry。Takuya終日参加予定","","#marketing-week-spring-2026","✅ "],
-  ["✅ Confirmed","4/24/2026","","","Partner: Marketing Week Spring 2026_PM-APAC-JP","","Reisa Matsuda","Partner-Led","Sponsorship","","","StoreHero","","","","","","","","","",""],
-  ["✅ Confirmed","4/24/2026","","","Marketing Week Spring — Shopify Day (Stage Jack)","🇯🇵 JP","Ami Takane","Shopify Owned","Conference","Tokyo","","","","","","","","","4セッション: ①TikTok Shop×Collective (Junichi+TikTok Rong) ②AI UCP/GEO (Nobu+Stephenie) ③Edition/SimGym (Mizuki/Minami) ④CSM Thought Leadership+Sidekick (Keisuke/Saika/Tom). Lead info provided by RX Japan","","#marketing-week-spring-2026","✅ "],
-  ["🔄 Planning","4/29/2026","","4/30/2026","Partner: Taiwan Commerce Show (Kleis)","🇨🇳 GCR","Elise Li","Partner-Led","Event - IRL","","MM","Kleis","","","","","","","Proposed; 100 exp. leads, 3 PQLs","","Partner Marketing",""],
-  ["✅ Confirmed","4/29/2026","","","Shopify Connect MELB","🇦🇺 ANZ","Gabby Song","Shopify Owned","Event - IRL","Melbourne","LA, MM, SMB","","","https://vault.shopify.io/gsd/projects/48366-AU-Shopify-Connect-Series-SYD-MELB-Q1-2026","","","","","","","Revenue Events",""],
-  ["🔄 Planning","5/1/2026","","6/18/2026","Partner: Fusion 5 — Future of Commerce Breakfast Event","🇦🇺 ANZ","Britta Davies","Partner-Led","Event - IRL","","","PocketSquare / Fusion 5","","","","","","","Proposed; $4K USD","","Partner Marketing",""],
-  ["⏳ TBD","5/5/2026","","5/7/2026","Retail Fest","🇦🇺 ANZ","Carlotta Criel","Shopify Owned","Conference","","SMB","","","","","","","","Vetting/Pending","","Revenue Events",""],
-  ["✅ Confirmed","5/7/2026","","","Add to Cart retail event SYD","🇦🇺 ANZ","Carlotta Criel","Shopify Owned","Conference","","MM, SMB, X-Sell","","","","","","","","","","Revenue Events",""],
-  ["🔄 Planning","5/14/2026","","5/16/2026","Partner: Automotive Aftermarket Expo (Soul and Wolf)","🇦🇺 ANZ","Britta Davies","Partner-Led","Sponsorship","","MM, SMB","Soul and Wolf","","","","","","","Proposed; 30 exp. leads, 5 PQLs; $25K AUD","","Partner Marketing",""],
-  ["✅ Confirmed","5/13/2026","","","Forefront Auckland Roundtable: AI Commerce in Practice","🇦🇺 ANZ","Shalini Karthikeyan","Shopify Owned","Conference","Gilt Brasserie, Auckland","","Forefront Events","","","","","","AI Commerce in Practice: What's actually working for New Zealand retailers right now?","24pax (15-18 Forefront delegates + 4 spots); Speaker: James Johnson","","Revenue Events",""],
-  ["🔄 Planning","4/?","","","AI Campaign — Sponsored Media - Nikkei Advertorial","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Content Boost (Paid/Social)","","","","","","","","","","媒体選定確定・配信タイミング合意済み。メディアSOW提出済み","","#ai-h1-campaign-jp","✅ "],
-  ["🔄 Planning","5/?","","","AI Campaign — Sponsored Media - Nikkei Xtrend","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Content Boost (Paid/Social)","","","","","","","","","","媒体選定確定・配信タイミング合意済み。メディアSOW提出済み","","#ai-h1-campaign-jp","✅ "],
-  ["🔄 Planning","5/?","","","AI Campaign — Sponsored Media - Nikkei Xtech","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Content Boost (Paid/Social)","","","","","","","","","","媒体選定確定・配信タイミング合意済み。メディアSOW提出済み","","#ai-h1-campaign-jp","✅ "],
-  ["🔄 Planning","5/? ","","","AI Campaign — Sponsored Media - JB Press CX Forum","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Content Boost (Paid/Social)","","","Convert / Wishlist / Dotdigital","","","","","","","媒体選定確定・配信タイミング合意済み。メディアSOW提出済み","","#ai-h1-campaign-jp","✅ "],
-  ["🔄 Planning","5/? ","","","AI Campaign — Sponsored Media - JB Press AI Infra Forum","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Content Boost (Paid/Social)","","","Klaviyo","","","","","","","媒体選定確定・配信タイミング合意済み。メディアSOW提出済み","","#ai-h1-campaign-jp","✅ "],
-  ["🔄 Planning","4/?","" ,"","Partner: Shopify Merchant × Partner Bootcamp (GCR)","🇨🇳 GCR","Elise Li","Partner-Led","Event - IRL","","MM","","","","","","","","Proposed; 200 exp. leads, 4 PQLs; $20K USD","","Partner Marketing",""],
-  ["🔄 Planning","6/?","" ,"","Partner: Strategic Media Partnership with WWD JAPAN","🇯🇵 JP","Reisa Matsuda","Partner-Led","Content Boost (Paid/Social)","","","Apparel Web","","","","","","","Q2 content boost; date TBD","","Partner Marketing",""],
-  // --- Entries added Apr 24, 2026 (missing from previous fallback) ---
-  ["✅ Confirmed","4/30/2026","","","Forefront Melbourne Roundtable: AI Commerce in Practice","🇦🇺 ANZ","Shalini Karthikeyan","Shopify Owned","Conference","Kisume, Kuro Private Dining Room, 175 Flinders Lane Melbourne","","Forefront Events","","","","","","AI Commerce in Practice: What's actually working for Australian retailers right now?","22pax (15-18 Forefront delegates + 4 spots); Speakers: James Johnson, Eduardo Frias","","Revenue Events",""],
-  ["✅ Confirmed","5/15/2026","","","Partner: Yarra Valley Event (Convert)","🇦🇺 ANZ","Britta Davies","Partner-Led","Event - IRL","Yarra Valley","MM","","","","","","","","40 exp. leads, 10 PQLs","","Partner Marketing",""],
-  ["✅ Confirmed","5/19/2026","","5/21/2026","Partner: iMedia NZ (Moustache Republic)","🇦🇺 ANZ","Britta Davies","Partner-Led","Sponsorship","","","Moustache Republic","","","","","","","NZ conference","","Partner Marketing",""],
-  ["✅ Confirmed","5/20/2026","","","K:SYD (Klaviyo Partner Event)","🇦🇺 ANZ","Carlotta Criel","Shopify Owned","Event - IRL","Sydney","","","","","","","","","","","Revenue Events",""],
-  ["✅ Confirmed","5/20/2026","","","Partner: KSYD Klaviyo Sponsorship","🌏 APAC","Britta Davies","Partner-Led","Sponsorship","Sydney","","Convert / NORA","","","","","","","$10K Shopify contribution","","Partner Marketing",""],
-  ["🔄 Planning","5/20/2026","","","AI Theme BOF 今やらなければならいことチェックリスト 5月企画","🇯🇵 JP","Ayumi Manabe","Shopify Owned","Webinar/Virtual Event","","","","","","","","","","企画着手3/11; テーマ・登壇者TBD","","#jp-webinar","✅ "],
-  ["🔄 Planning","5/20/2026","11:00","","EOFY Ready: How Australia's Leading Retailers Are Using AI to Win","🇦🇺 ANZ","Shalini Karthikeyan","Shopify Owned","Webinar/Virtual Event","","SMB, MM, LA","","","","","","","EOFY Ready: How Australia's Leading Retailers Are Using AI to Win","Speaker: James Johnson + merchant TBC; GMV threshold: USD $1M+ annual ecommerce GMV","","Revenue Events",""],
-  ["✅ Confirmed","5/21/2026","","","Partner: NORA Showpo Bespoke Lunch (Convert)","🇦🇺 ANZ","Britta Davies","Partner-Led","Sponsorship","","LA, MM","Resort / Huckleberry","","","","","","","LA/MM target accounts","","Partner Marketing",""],
-  ["✅ Confirmed","5/21/2026","","","Partner: OD & Chill x Body Shop (Overdose)","🇦🇺 ANZ","Britta Davies","Partner-Led","Event - IRL","","LA, MM","Flagship","","","","","","","80 exp. leads, 8 PQLs; part of Unified Flywheel","","Partner Marketing",""],
-  ["✅ Confirmed","5/21/2026","","","Partner: Joint Offline Event — Present & Future of Shopify in Japan","🇯🇵 JP","Reisa Matsuda","Partner-Led","Event - IRL","","","Resort","","","","","","","⚠️ Near CxO Roundtable (5/20 TBD) — check for scheduling conflict","","Partner Marketing","✅ "],
-  ["🔄 Planning","5/22/2026","","","Partner: Huckleberry Partner Roadshow Season 3","","Reisa Matsuda","Partner-Led","Event - IRL","","","Huckleberry","","","","","","","","","Partner Marketing",""],
-  ["✅ Confirmed","5/26/2026","","","Partner: E-commerce Managers Forum 2026 Spring (Flagship)","🇯🇵 JP","Reisa Matsuda","Partner-Led","Sponsorship","","","Flagship","","","","","","","","","Partner Marketing","✅ "],
-  ["✅ Confirmed","6/2/2026","","6/4/2026","NRF APAC Shop & Sip x NORA","🇦🇺 ANZ","Carlotta Criel","Shopify Owned","Conference","Singapore","LA, MM","","","","","","","","","","Revenue Events",""],
-  ["⏳ TBD","6/2/2026","","6/4/2026","NRF APAC","🇸🇬 SEA","Carlotta Criel","Shopify Owned","Conference","Singapore","LA, MM","","","","","","","","Vetting/Pending","","Revenue Events",""],
-  ["🔄 Planning","6/2/2026","","","CxO ラウンドテーブル 「エージェンティックコマース AIが購買を代行する時代の経営戦略」","🇯🇵 JP","Ayumi Manabe","Shopify Owned","Event - IRL","Tokyo","Upmarket","","","","","","","","","","#jp-abm-v2",""],
-  ["🔄 Planning","6/10/2026","","","Partner: Shopify POS Meetup & Talk Session (Apparel Web)","🇯🇵 JP","Reisa Matsuda","Partner-Led","Event - IRL","","","Apparel Web","","","","","","","⚠️ Same day as Commerce Summit Day 1","","Partner Marketing","✅ "],
-  ["🔄 Planning","6/10/2026","","","Commerce Summit — Day 1","🇯🇵 JP","Ayumi Manabe","Shopify Owned","Event - IRL","","","","","","","","","","","","#jp-abm-v2",""],
-  ["⏳ TBD","6/11/2026","","","ARC Retail Awards 2026","🇦🇺 ANZ","Carlotta Criel","Shopify Owned","Conference","Melbourne","LA, MM","","","","","","","","Vetting/Pending","","Revenue Events",""],
-  ["🔄 Planning","6/11/2026","","","Commerce Summit — Day 2","🇯🇵 JP","Ayumi Manabe","Shopify Owned","Event - IRL","","","","","","","","","","","","#jp-abm-v2",""],
-  ["✅ Confirmed","6/12/2026","","","Partner: Commerce Summit 2026_PM-APAC-JP","","Reisa Matsuda","Partner-Led","Sponsorship","","","HuckleBerry","","","","","","","","","Partner Marketing",""],
-  ["🔄 Planning","6/12/2026","","","Commerce Summit — Day 3","🇯🇵 JP","Ayumi Manabe","Shopify Owned","Event - IRL","","","TBD","","","","","","","","","#jp-abm-v2",""],
-  ["🔄 Planning","6/16/2026","","","AI Campaign — Sponsored Media - NewsPicks","🇯🇵 JP","Aoi Tanaka","Shopify Owned","Content Boost (Paid/Social)","","","Apparel Web","","","","","","","媒体選定確定・配信タイミング合意済み。メディアSOW提出済み","","#ai-h1-campaign-jp","✅ "],
-  ["✅ Confirmed","7/2/2026","","","Online Retail Breakfast","🇦🇺 ANZ","Carlotta Criel","Shopify Owned","Conference","Sydney","LA, MM, SMB","","","","","","","","","","Revenue Events",""],
-  ["⏳ TBD","7/2/2026","","","Retail Tech Osaka Day1","🇯🇵 JP","Ami Takane","Shopify Owned","Conference","Osaka","","","","","","","","","","","Revenue Events","✅ "],
-  ["⏳ TBD","7/3/2026","","","Retail Tech Osaka Day2","🇯🇵 JP","Ami Takane","Shopify Owned","Conference","Osaka","","","","","","","","","","","Revenue Events","✅ "],
-  ["✅ Confirmed","7/22/2026","","","Online Retail Sponsored Keynote","🇦🇺 ANZ","Carlotta Criel","Shopify Owned","Conference","Sydney","All Merchants","","","","","","","","","","Revenue Events",""],
-  ["⏳ TBD","9/22/2026","","9/24/2026","Retail Show Australia MEL","🇦🇺 ANZ","Carlotta Criel","Shopify Owned","Conference","Melbourne","Upmarket","","","","","","","","Vetting/Pending","","Revenue Events",""],
-  // --- Shalini's APAC LinkedIn ABM Program (Q2 FY26) ---
-  ["✅ Confirmed","3/27/2026","","","Unified Commerce Webinar: Buzzword or Business Strategy? - Static","🌏 APAC","Shalini Karthikeyan","Shopify Owned","Webinar/Virtual Event","","Upmarket","","","https://vault.shopify.io/gsd/projects/49984-Q2-Optimise-LinkedIn-Paid-ABM-Program-for-APAC-Mid-Market-and-Large-Accounts","","","Q1 top performer. $58M influenced pipeline in AMER.","Is unified commerce just a buzzword, or the strategy that gets you to your next growth milestone?","LinkedIn ABM_APAC_Static | Always-on | Website Visits","Website Visits","3/27/2026",""],
-  ["✅ Confirmed","3/27/2026","","","Skullcandy Case Study - Video + Static","🌏 APAC","Shalini Karthikeyan","Shopify Owned","Case Study","","Upmarket","","","https://vault.shopify.io/gsd/projects/49984-Q2-Optimise-LinkedIn-Paid-ABM-Program-for-APAC-Mid-Market-and-Large-Accounts","","","High brand recognition, strong creative","It's one thing to replatform. It's another to do it in 90 days.","LinkedIn ABM_APAC_Video | Always-on | Website Visits","Website Visits","3/27/2026",""],
-  ["🔁 In Progress","3/30/2026","","","Quad Lock Case Study (ANZ) - Static","🌏 APAC","Shalini Karthikeyan","Shopify Owned","Case Study","","Upmarket","","","https://vault.shopify.io/gsd/projects/49984-Q2-Optimise-LinkedIn-Paid-ABM-Program-for-APAC-Mid-Market-and-Large-Accounts","","","15% D2C revenue YoY. 25% US/EU sales growth.","15% D2C revenue growth, year over year. 25% growth in the US and EU.","LinkedIn ABM_APAC_Static | Always-on | Website Visits","Website Visits","3/30/2026",""],
-  ["✅ Confirmed","3/27/2026","","","Migration Guide / Time to Value - Static","🌏 APAC","Shalini Karthikeyan","Shopify Owned","Gated Content (ebook/whitepaper/website)","","Upmarket","","","https://vault.shopify.io/gsd/projects/49984-Q2-Optimise-LinkedIn-Paid-ABM-Program-for-APAC-Mid-Market-and-Large-Accounts","","","All Accounts (no funnel segmentation)","The real risk is standing still. Get the guide to faster migration.","LinkedIn ABM_APAC_Static | Always-on | Website Visits","Website Visits","3/27/2026",""],
-  ["✅ Confirmed","3/30/2026","","","Sidekick AI Prompt Playbook - Static","🌏 APAC","Shalini Karthikeyan","Shopify Owned","Gated Content (ebook/whitepaper/website)","","Upmarket","","","https://vault.shopify.io/gsd/projects/49984-Q2-Optimise-LinkedIn-Paid-ABM-Program-for-APAC-Mid-Market-and-Large-Accounts","","","AMER proven at MOFU. Practical AI guide for ecommerce teams.","20+ AI prompts to analyze, create, build, and automate, right inside your Shopify admin.","LinkedIn ABM_APAC_Static | Always-on | Website Visits","Website Visits","3/30/2026",""],
-  ["🔁 In Progress","3/30/2026","","","Australia Post: Inside Australian Online Shopping 2026 - Static","🌏 APAC","Shalini Karthikeyan","Shopify Owned","Gated Content (ebook/whitepaper/website)","","Upmarket","","","https://vault.shopify.io/gsd/projects/49984-Q2-Optimise-LinkedIn-Paid-ABM-Program-for-APAC-Mid-Market-and-Large-Accounts","","","3rd-party AU market research. $82.6bn AU online spend.","Australian consumers spent a record $82.6bn online in 2025.","LinkedIn ABM_APAC_Static | Always-on | Website Visits","Website Visits","3/30/2026",""],
-  ["✅ Confirmed","3/27/2026","","","TCO Webinar: How to improve your TCO by up to 36% - Static","🌏 APAC","Shalini Karthikeyan","Shopify Owned","Webinar/Virtual Event","","Upmarket","","","https://vault.shopify.io/gsd/projects/49984-Q2-Optimise-LinkedIn-Paid-ABM-Program-for-APAC-Mid-Market-and-Large-Accounts","","","All Accounts (no funnel segmentation)","Platform costs don't have to keep climbing. See how retailers are cutting TCO by up to 36%.","LinkedIn ABM_APAC_Static | Always-on | Website Visits","Website Visits","3/27/2026",""],
-  ["🔁 In Progress","3/27/2026","","","Murad Case Study - Video","🌏 APAC","Shalini Karthikeyan","Shopify Owned","Case Study","","Upmarket","","","https://vault.shopify.io/gsd/projects/49984-Q2-Optimise-LinkedIn-Paid-ABM-Program-for-APAC-Mid-Market-and-Large-Accounts","","","56% conversion increase in 1 year","A 56% conversion increase in just 1 year? That's what Murad unlocked after moving to Shopify.","LinkedIn ABM_APAC_Video | Always-on | Website Visits","Website Visits","3/27/2026",""],
-  ["🔁 In Progress","3/30/2026","","","Nutrition Warehouse Case Study (ANZ) - Static","🌏 APAC","Shalini Karthikeyan","Shopify Owned","Case Study","","Upmarket","","","https://vault.shopify.io/gsd/projects/49984-Q2-Optimise-LinkedIn-Paid-ABM-Program-for-APAC-Mid-Market-and-Large-Accounts","","","120+ stores on Shopify POS in 6 months. Magento migration.","From Magento to 120 live stores in 6 months. Staff trained in 15 minutes on day one.","LinkedIn ABM_APAC_Static | Always-on | Website Visits","Website Visits","3/30/2026",""],
-  ["🔁 In Progress","3/27/2026","","","Metagenics Case Study (ANZ) - Static","🌏 APAC","Shalini Karthikeyan","Shopify Owned","Case Study","","Upmarket","","","https://vault.shopify.io/gsd/projects/49984-Q2-Optimise-LinkedIn-Paid-ABM-Program-for-APAC-Mid-Market-and-Large-Accounts","","","67% YoY revenue increase, 25% conversion lift. LOCAL ANZ case study.","B2B and DTC, both migrated to Shopify in 6 months. 67% revenue growth and 25% higher conversions.","LinkedIn ABM_APAC_Static | Always-on | Website Visits","Website Visits","3/27/2026",""],
-  ["🔁 In Progress","3/27/2026","","","4 Signs Your Tech Stack Is Holding You Back (AU blog) - Static","🌏 APAC","Shalini Karthikeyan","Shopify Owned","Blog Post","","Upmarket","","","https://vault.shopify.io/gsd/projects/49984-Q2-Optimise-LinkedIn-Paid-ABM-Program-for-APAC-Mid-Market-and-Large-Accounts","","","ANZ-ready. Problem-framing opener for cold audience.","Four signs your tech stack is limiting your growth. See what Australia's leading retailers are doing instead.","LinkedIn ABM_APAC_Static | Always-on | Website Visits","Website Visits","3/27/2026",""],
-  ["✅ Confirmed","3/27/2026","","","Digital Transformation Report: Integration vs Unification - Static","🌏 APAC","Shalini Karthikeyan","Shopify Owned","Gated Content (ebook/whitepaper/website)","","Upmarket","","","https://vault.shopify.io/gsd/projects/49984-Q2-Optimise-LinkedIn-Paid-ABM-Program-for-APAC-Mid-Market-and-Large-Accounts","","","Forrester data. HERO ASSET.","Integrated doesn't mean unified. See the data on what fragmentation is really costing retailers.","LinkedIn ABM_APAC_Static | Always-on | Website Visits","Website Visits","3/27/2026",""],
-  ["✅ Confirmed","3/30/2026","","","Brand Collective Case Study (ANZ) - Static","🌏 APAC","Shalini Karthikeyan","Shopify Owned","Case Study","","Upmarket","","","https://vault.shopify.io/gsd/projects/49984-Q2-Optimise-LinkedIn-Paid-ABM-Program-for-APAC-Mid-Market-and-Large-Accounts","","","19 brands on one platform. Team of 20 to 6. 60% IT overhead reduction.","Brand Collective runs 19 brands with a team of 6. Before Shopify, it took a team of 20.","LinkedIn ABM_APAC_Static | Always-on | Website Visits","Website Visits","3/30/2026",""],
-  ["🔁 In Progress","3/30/2026","","","The Good Guys Case Study (ANZ, ENT) - Static","🌏 APAC","Shalini Karthikeyan","Shopify Owned","Case Study","","Upmarket","","","https://vault.shopify.io/gsd/projects/49984-Q2-Optimise-LinkedIn-Paid-ABM-Program-for-APAC-Mid-Market-and-Large-Accounts","","","~20% online sales growth. 5x faster deployments. 2x site speed.","A custom platform that took days to update. The Good Guys fixed all of it on Shopify.","LinkedIn ABM_APAC_Static | Always-on | Website Visits","Website Visits","3/30/2026",""],
-  ["✅ Confirmed","3/30/2026","","","Aviator Nation AI/Data Interview - Blog - Static","🌏 APAC","Shalini Karthikeyan","Shopify Owned","Blog Post","","Upmarket","","","https://vault.shopify.io/gsd/projects/49984-Q2-Optimise-LinkedIn-Paid-ABM-Program-for-APAC-Mid-Market-and-Large-Accounts","","","AMER proven at TOFU/MOFU. AI + unified data story.","Shopify's AI assistant already knows your business. See how Aviator Nation put it to work.","LinkedIn ABM_APAC_Static | Always-on | Website Visits","Website Visits","3/30/2026",""],
-  ["✅ Confirmed","3/27/2026","","","Your AI Discoverability Checklist - Static","🌏 APAC","Shalini Karthikeyan","Shopify Owned","Gated Content (ebook/whitepaper/website)","","Upmarket","","","https://vault.shopify.io/gsd/projects/49984-Q2-Optimise-LinkedIn-Paid-ABM-Program-for-APAC-Mid-Market-and-Large-Accounts","","","Runs across AMER at every funnel stage. Proven performer.","AI search is how buyers find products now. Here's how to make sure yours show up.","LinkedIn ABM_APAC_Static | Always-on | Website Visits","Website Visits","3/27/2026",""],
-  ["✅ Confirmed","3/27/2026","","","Make AI Your Advantage - Contact Us - Static + Video","🌏 APAC","Shalini Karthikeyan","Shopify Owned","Other","","Upmarket","","","https://vault.shopify.io/gsd/projects/49984-Q2-Optimise-LinkedIn-Paid-ABM-Program-for-APAC-Mid-Market-and-Large-Accounts","","","AMER runs at BOFU as static + video. AI-focused CTA.","Create and launch campaigns faster with Shopify's built-in AI.","LinkedIn ABM_APAC_BOF | Always-on | Lead Generation","Lead Generation","3/27/2026",""],
-  ["✅ Confirmed","3/27/2026","","","GEO Playbook - Exec Post Boost","🌏 APAC","Shalini Karthikeyan","Shopify Owned","Other","","Upmarket","","","https://vault.shopify.io/gsd/projects/49984-Q2-Optimise-LinkedIn-Paid-ABM-Program-for-APAC-Mid-Market-and-Large-Accounts","","","Eduardo Frias + Sandy Jeong exec posts. AMER awareness tier.","How brands are winning the AI search race. The GEO Playbook from Shopify.","LinkedIn ABM_APAC_ThoughtLeadership | Always-on | Post Engagement","Post Engagement","3/27/2026",""],
-  ["✅ Confirmed","3/30/2026","","","Agentic-Ready Product Data - Exec Post Boost","🌏 APAC","Shalini Karthikeyan","Shopify Owned","Other","","Upmarket","","","https://vault.shopify.io/gsd/projects/49984-Q2-Optimise-LinkedIn-Paid-ABM-Program-for-APAC-Mid-Market-and-Large-Accounts","","","AMER exec posts. Sandy Jeong, Peyman N, Eduardo Frias, Dustin Holmstrom.","Your buyers are already shopping through AI. Here's how to make sure your products show up ready.","LinkedIn ABM_APAC_ThoughtLeadership | Always-on | Post Engagement","Post Engagement","3/30/2026",""],
-  ["🔁 In Progress","3/30/2026","","","The Good Guys Case Study (ANZ, ENT) - Video","🌏 APAC","Shalini Karthikeyan","Shopify Owned","Case Study","","Upmarket","","","https://vault.shopify.io/gsd/projects/49984-Q2-Optimise-LinkedIn-Paid-ABM-Program-for-APAC-Mid-Market-and-Large-Accounts","","","Video on Wistia: shopify-2.wistia.com/medias/6x95ouhs5j. Paid ad clearance unconfirmed.","A custom platform that took days to update. The Good Guys fixed all of it on Shopify.","LinkedIn ABM_APAC_Video | Always-on | Website Visits","Website Visits","3/30/2026",""],
-  // --- End added entries ---
-  ["✅ Confirmed","7/7/2026","","","Japan SEO Conference — Okamura-san Speaker","🇯🇵 JP","Ayumi Manabe","3rd Party Event","Conference","Tokyo","LA, MM","Fabel Company","","","","https://www.dropbox.com/scl/fi/vu2c9xbs74ecw9ufypiut/JSC26-_ver0.81.pdf?rlkey=fxszh7dhizk1ib2dk6frr1y6k&dl=0","Thought Leadership","","Okamura-san登壇確定。Fabel Company主催。スポンサー協賛は辞退、スピーカー参加（無料）","#rev-jp-team-","",""],
-  ["✅ Confirmed","9/3/2026","10:00","","AI Commerce EXPO 2026 — Mitch Keynote (Nano Opt Media)","🇯🇵 JP","Aoi Tanaka","3rd Party Event","Conference","Tokyo","LA, MM, Upmarket","Nano Opt Media","","","","https://f2ff.jp/event/commerce-sns","Thought Leadership","","Mitch keynote 10:00-10:40. Nano Opt Media主催。AIコマース系イベント。Aoi prep中","#jp-comms-direct","",""],
-  ["⏳ TBD","TBD","TBD","","NORA AI Summit Sydney","🇦🇺 ANZ","Carlotta Criel","Shopify Owned","Conference","Sydney","LA, MM","","","","","","","","August; Vetting/Pending","","Revenue Events",""],
-  ["⏳ TBD","TBD","TBD","","CEO Roundtable Sydney","🇦🇺 ANZ","Carlotta Criel","Shopify Owned","Sales Micro Event","Sydney","LA, MM","","","","","","","","August; Vetting/Pending","","Revenue Events",""],
-  ["⏳ TBD","TBD","TBD","","NFL Exec Engagement","🇦🇺 ANZ","Gabby Song","Shopify Owned","Sales Micro Event","","","","","","","","","","September; Vetting/Pending","","Revenue Events",""],
-  ["⏳ TBD","TBD","TBD","","Commerce Day","🇦🇺 ANZ","Gabby Song","Shopify Owned","Event - IRL","","","","","","","","","","October; Vetting/Pending","","Revenue Events",""],
-  ["⏳ TBD","TBD","TBD","","NORA AI Summit Melbourne","🇦🇺 ANZ","Carlotta Criel","Shopify Owned","Conference","Melbourne","LA, MM","","","","","","","","October; Vetting/Pending; Melbourne","","Revenue Events",""],
-  ["⏳ TBD","TBD","TBD","","The Business Show Australia","🇦🇺 ANZ","Carlotta Criel","Shopify Owned","Conference","Melbourne","MM, SMB","Event Marketing","","","","","","","November; Vetting/Pending","","Revenue Events",""],
-  ["⏳ TBD","TBD","TBD","","ARC Premium Boardroom Lunch","🇦🇺 ANZ","Daniela Solomon","Shopify Owned","Conference","Melbourne","LA, MM","Event Marketing","","","","","","","Q3; Vetting/Pending","","Revenue Events",""],
-  ["⏳ TBD","TBD","TBD","","Partner: Rewire Placeholder","","Reisa Matsuda","Partner-Led","","","","Rewire","","","","","","","","","",""],
-];
+// Sheet-only mode: no embedded fallback rows (removed). Calendar shows only live spreadsheet data.
 
 // ── State ────────────────────────────────────────────────────────
 let allEvents    = [];
@@ -639,23 +506,23 @@ function appsRowsToMatrix(rows) {
   return [headers, ...rows.map(o => headers.map(h => (o[h] != null ? String(o[h]) : '')))];
 }
 
+/** Returns undefined if Apps Script not configured or request failed; [] if sheet has no data rows. */
 async function loadFromAppsScript() {
   const base = typeof CONFIG !== 'undefined' && CONFIG.APPS_SCRIPT_URL && String(CONFIG.APPS_SCRIPT_URL).trim();
-  if (!base) return null;
+  if (!base) return undefined;
   try {
     const url = `${base.trim()}?action=cms&sheet=${encodeURIComponent(TACTICS_TAB_NAME)}`;
     const res = await fetch(url);
-    if (!res.ok) return null;
+    if (!res.ok) return undefined;
     const json = await res.json();
-    if (!json.ok || !json.data || json.data.error) return null;
+    if (!json.ok || !json.data || json.data.error) return undefined;
     const rows = json.data.rows;
-    if (!rows || !rows.length) return null;
+    if (!rows || !rows.length) return [];
     const matrix = appsRowsToMatrix(rows);
-    const events = csvToEvents(matrix);
-    return events.length ? events : null;
+    return csvToEvents(matrix);
   } catch (e) {
     console.warn('Apps Script fetch failed:', e.message);
-    return null;
+    return undefined;
   }
 }
 
@@ -663,10 +530,16 @@ async function loadFromAppsScript() {
 async function loadData() {
   setSyncState('loading', 'Loading from APAC Marketing Calendar…');
 
-  const fromScript = await loadFromAppsScript();
-  if (fromScript) {
-    allEvents = fromScript;
-    setSyncState('ok', `Live data (sheet API) — ${allEvents.length} activities · ${new Date().toLocaleTimeString()}`);
+  const scriptEvents = await loadFromAppsScript();
+  if (scriptEvents !== undefined) {
+    allEvents = scriptEvents;
+    const suffix = `${new Date().toLocaleTimeString()}`;
+    setSyncState(
+      'ok',
+      allEvents.length
+        ? `Live data (sheet API) — ${allEvents.length} activities · ${suffix}`
+        : `Live data (sheet API) — 0 activities (tab is empty or no valid rows) · ${suffix}`
+    );
     updateStats();
     onSearchFilter();
     return;
@@ -683,12 +556,20 @@ async function loadData() {
     }
     const parsed = Papa.parse(text, { skipEmptyLines: true });
     const events = csvToEvents(parsed.data);
-    if (events.length < 1) throw new Error('No calendar rows parsed');
     allEvents = events;
-    setSyncState('ok', `Live data (published CSV) — ${events.length} activities · ${new Date().toLocaleTimeString()}`);
+    const suffix = `${new Date().toLocaleTimeString()}`;
+    setSyncState(
+      'ok',
+      events.length
+        ? `Live data (published CSV) — ${events.length} activities · ${suffix}`
+        : `Live data (published CSV) — 0 activities parsed · ${suffix}`
+    );
   } catch (e) {
-    allEvents = FALLBACK_DATA.map(r => rowToEvent(r)).filter(Boolean);
-    setSyncState('err', `Showing ${allEvents.length} offline snapshot · ${LAST_UPDATED}. Fix: set APPS_SCRIPT_URL in config.js, or File → Share → Publish to web for this spreadsheet. (${e.message})`);
+    allEvents = [];
+    setSyncState(
+      'err',
+      `Could not load calendar (showing nothing). Set APPS_SCRIPT_URL in config.js, or republish the spreadsheet to web. ${e.message}`
+    );
     console.warn('Sheet fetch failed:', e.message);
   }
   updateStats();
