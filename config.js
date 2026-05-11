@@ -30,6 +30,8 @@ const CONFIG = {
   // ── Master Google Sheet ID ─────────────────────────────────────────────────
   // From your Sheet URL: https://docs.google.com/spreadsheets/d/SHEET_ID/edit
   // Run setup/CreateMasterSheet.gs to create this sheet automatically.
+  // Tactic calendar (#tactic-tracker) reads tab NEW_Calendar_TEMPLATE via Apps Script
+  // (see appsscript/Code.gs → TACTICS_TAB_NAME) or GViz/CSV fallbacks in tracker/index.html.
   MASTER_SHEET_ID: '1iXiwUD4TMb-37LsE-rTgfPsUMQ0BOa5bexxMNi8HamA',
 
   // ── Apps Script Web App URL ────────────────────────────────────────────────
@@ -96,7 +98,7 @@ const CONFIG = {
   LINKS: {
     orgChart:     'YOUR_ORG_CHART_URL_HERE',    // Vault, Slides, or Drive link
     okrDoc:       'YOUR_OKR_DOC_URL_HERE',      // Vault or Google Sheet link
-    tacticTracker: 'https://apac-marketing-tracker.quick.shopify.io/',
+    tacticTracker: 'https://apacmarketinghub.quick.shopify.io/#tactic-tracker',
   },
 
   // ── Looker / Dashboard Embeds ──────────────────────────────────────────────

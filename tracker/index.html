@@ -614,8 +614,7 @@ async function loadFromAppsScript() {
   if (!base) return undefined;
   try {
     const u = new URL(base.trim());
-    u.searchParams.set('action', 'cms');
-    u.searchParams.set('sheet', TACTICS_TAB_NAME);
+    u.searchParams.set('action', 'tactics');
     const res = await fetch(u.toString());
     if (!res.ok) return undefined;
     const json = await res.json();
@@ -675,8 +674,7 @@ function loadFromAppsScriptJsonp() {
     };
     try {
       const u = new URL(base.trim());
-      u.searchParams.set('action', 'cms');
-      u.searchParams.set('sheet', TACTICS_TAB_NAME);
+      u.searchParams.set('action', 'tactics');
       u.searchParams.set('callback', cb);
       scriptEl = document.createElement('script');
       scriptEl.src = u.toString();

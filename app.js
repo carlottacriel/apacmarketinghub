@@ -749,7 +749,7 @@ function initCalendar(data) {
       <div class="cal-empty">
         <div class="ph-icon">📅</div>
         <p>View all APAC marketing activities in the full tracker.</p>
-        <a class="btn-primary" href="https://apac-marketing-tracker.quick.shopify.io/" target="_blank" rel="noopener" style="margin-top:14px; display:inline-flex;">
+        <a class="btn-primary" href="https://apacmarketinghub.quick.shopify.io/#tactic-tracker" target="_blank" rel="noopener" style="margin-top:14px; display:inline-flex;">
           Open APAC Marketing Tracker ↗
         </a>
       </div>`;

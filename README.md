@@ -12,13 +12,19 @@ A light-themed internal hub for the Shopify APAC Marketing team.
 
 All content is managed in **Google Sheets**. No code or GitHub access needed.
 
-Ask the hub maintainer (Shalini or Carlotta) for Editor access to the master sheet.
+Ask the hub maintainer for **Editor** access to the master sheet. Anyone with Editor access can update rows — **no GitHub, no Apps Script, no deploy** for routine changes.
+
+### Calendar (Friday / weekly updates)
+
+The live tactic calendar reads tab **`NEW_Calendar_TEMPLATE`** in the same master sheet. Regional leads update rows there (status, dates, owners, links). Changes appear on the hub on the next page refresh — **you do not touch the repo** for those edits.
+
+**Apps Script is not something editors run weekly.** It is optional infrastructure (deploy once) that lets the hosted site fetch sheet data when anonymous CSV access is unreliable. One maintainer deploys or redeploys it when code changes; **everyone else only edits the Sheet.**
 
 ### Sheet tabs → Hub sections
 
 | Sheet tab | Updates this section |
 |---|---|
-| `tactics` | Calendar (live marketing activities) |
+| `NEW_Calendar_TEMPLATE` | Calendar / tactic tracker (live marketing activities) |
 | `announcements` | Home page feed |
 | `key_stats` | Key Stats — metric numbers |
 | `campaigns` | Campaign Deep Dive |
@@ -124,7 +130,7 @@ Cards appear in the same order as rows in the sheet. Put the most senior person 
 |---|---|
 | Hosting | Shopify Quicksite (`apacmarketinghub.quick.shopify.io`) |
 | Content | One master Google Sheet (all tabs in one place) |
-| Data bridge | Published Google Sheet CSV — no Apps Script needed |
+| Data bridge | Prefer **Apps Script Web App** (`APPS_SCRIPT_URL` in `config.js`) for the tactic tracker on Quick; fallback options include **Publish to web** CSV where policy allows |
 | Code | Vanilla HTML / CSS / JS — no framework |
 
 ### First-time setup (do this once)
@@ -175,11 +181,12 @@ Same command as Step 4. Content changes (Google Sheet edits) **don't** require a
 
 | Task | Who | Tool |
 |---|---|---|
+| Update calendar rows (weekly / Friday) | Anyone with **Editor** on the master sheet | Tab `NEW_Calendar_TEMPLATE` — no repo |
 | Update content (links, descriptions, resources) | Anyone on the team | Google Sheets — Editor access |
-| Update "Hot This Week" highlights | Shalini / Carlotta | `config.js` → redeploy |
-| Add/remove team members in Org Chart | Shalini / Carlotta | "Org Chart" tab in tactic tracker sheet |
-| Code or layout changes | Shalini / devs | Cursor → `quick deploy` |
-| Apps Script updates | Shalini | Google Apps Script console |
+| Update "Hot This Week" highlights | Marketing leads / hub maintainer | `config.js` → redeploy |
+| Add/remove team members in Org Chart | Marketing leads | `org_chart` tab (or `Org chart`) in master sheet |
+| Code or layout changes | Hub maintainers / devs | Cursor → `quick deploy` |
+| Apps Script deploy / redeploy | Any maintainer with access to the Apps Script project | Google Apps Script — **only when API code or deployment settings change**, not for weekly content |
 
 ---
 
