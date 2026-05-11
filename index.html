@@ -79,8 +79,8 @@
           <div class="home-card-body">
             <div class="home-card-label">Planning</div>
             <div class="home-card-title">APAC Marketing Calendar</div>
-            <div class="home-card-desc">Calendar tab is being rebuilt here in the hub. No embedded tracker loads from this card.</div>
-            <div class="home-card-cta">Open Calendar tab →</div>
+            <div class="home-card-desc">All marketing activity across ANZ, JP, GCR &amp; SEA — filter by country, status, channel or owner.</div>
+            <div class="home-card-cta">Open Calendar →</div>
           </div>
         </div>
 
@@ -266,13 +266,16 @@
     <!-- ══════════════════════════════════════════════════ CALENDAR ══ -->
     <section id="tactic-tracker" class="tab-content">
       <div class="page-header">
-        <h1>Calendar</h1>
-        <p>APAC marketing calendar — starting fresh (embed removed).</p>
+        <h1>APAC Marketing Calendar</h1>
+        <p>All marketing activity across ANZ, JP, GCR &amp; SEA. Filter by country, status, channel or owner. Click any event for full detail.</p>
       </div>
-      <div class="placeholder-card">
-        <div class="ph-icon">🗓️</div>
-        <p>Nothing here yet. Rebuild the calendar in this tab or wire <code>tracker/</code> back in when ready.</p>
+      <div id="calendar-root">
+        <div class="loading">Loading calendar…</div>
       </div>
+      <p class="cal-source-note">
+        Source of truth: <a href="https://docs.google.com/spreadsheets/d/1iXiwUD4TMb-37LsE-rTgfPsUMQ0BOa5bexxMNi8HamA/edit?gid=1307705760" target="_blank" rel="noopener">NEW_Calendar_TEMPLATE</a>.
+        Data refreshed via Qlaw on demand.
+      </p>
     </section>
 
     <!-- ══════════════════════════════════════════ MKTG STRATEGY + OKRs ══ -->
@@ -386,6 +389,8 @@
   </main>
 
   <script src="config.js"></script>
+  <script src="calendar-data.js"></script>
+  <script src="calendar.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

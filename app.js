@@ -107,7 +107,7 @@ function initNav() {
 const SECTIONS = [
   { id: 'org-chart',            title: 'Org Chart',                      desc: 'APAC team structure & contacts',           icon: '👥' },
   { id: 'account-insights',     title: 'Account Insights',               desc: 'Key accounts & territory links',           icon: '🏢' },
-  { id: 'tactic-tracker',       title: 'Calendar',                       desc: 'APAC marketing calendar (rebuilding)',     icon: '🗓️' },
+  { id: 'tactic-tracker',       title: 'APAC Marketing Calendar',        desc: 'All marketing activity across APAC — month grid, list view & filters', icon: '🗓️' },
   { id: 'hub-okrs',             title: 'Mktg Strategy + OKRs',           desc: 'OKR progress & planning docs',             icon: '🎯' },
   { id: 'content-repo',         title: 'Content Repository',             desc: 'Decks, templates & assets',               icon: '📁' },
   { id: 'brand-champion',       title: 'Be a Brand Champion',            desc: 'Guidelines, logos & tone of voice',        icon: '✨' },
@@ -499,6 +499,10 @@ function renderOrgChart(data) {
 
 // ── Tab data loaders ──────────────────────────────────────────────────
 const TAB_LOADERS = {
+
+  'tactic-tracker': async () => {
+    if (typeof window.initMarketingCalendar === 'function') window.initMarketingCalendar();
+  },
 
   home: async () => {
     const orgLink = document.getElementById('org-chart-link');
