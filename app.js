@@ -111,7 +111,7 @@ const SECTIONS = [
   { id: 'hub-okrs',             title: 'Mktg Strategy + OKRs',           desc: 'OKR progress & planning docs',             icon: '🎯' },
   { id: 'content-repo',         title: 'Content Repository',             desc: 'Decks, templates & assets',               icon: '📁' },
   { id: 'brand-champion',       title: 'Be a Brand Champion',            desc: 'Guidelines, logos & tone of voice',        icon: '✨' },
-  { id: 'self-serve',           title: 'Self Serve Guides',              desc: 'How-to docs & onboarding',                icon: '📖' },
+  { id: 'self-serve',           title: 'ANZ Marketing Menu Card',        desc: 'What sales can pull from us & how — content, ABM, events, retention', icon: '🍽️' },
   { id: 'comms-pr',             title: 'Comms + PR',                     desc: 'Press resources & media contacts',         icon: '📰' },
   { id: 'key-stats',            title: 'Key Stats',                      desc: 'Headline APAC metrics',                    icon: '📊' },
   { id: 'performance-dashboard',title: 'Performance Dashboard',           desc: 'Looker Studio dashboard links',            icon: '📈' },
@@ -648,9 +648,7 @@ const TAB_LOADERS = {
   },
 
   'self-serve': async () => {
-    const data = await fetchSheet(SHEETS.onboarding);
-    const el = document.getElementById('guides-grid');
-    if (el) el.innerHTML = renderLinkCards(data, '📖');
+    if (typeof window.initSelfServe === 'function') window.initSelfServe();
   },
 
   'comms-pr': async () => {
