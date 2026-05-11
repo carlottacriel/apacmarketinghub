@@ -594,15 +594,21 @@ function updateStats() {
 }
 
 // ── Filter ───────────────────────────────────────────────────────
+function lc(s) { return (s || '').trim().toLowerCase(); }
+
 function filteredEvents() {
   const q = searchQuery.toLowerCase();
   return allEvents.filter(ev => {
     if (activeFilter !== 'ALL' && ev.country !== activeFilter) return false;
-    if (statusFilter && ev.status !== statusFilter) return false;
-    if (tacticFilters.length > 0 && !tacticFilters.some(f => f.toLowerCase() === (ev.tacticType||'').toLowerCase())) return false;
+    if (statusFilter && lc(ev.status) !== lc(statusFilter)) return false;
+    if (tacticFilters.length > 0 && !tacticFilters.some(tf => lc(tf) === lc(ev.tacticType))) return false;
     if (sourceFilter) {
-      if (sourceFilter === 'other' && (ev.sourceChannel === 'Shopify Owned' || ev.sourceChannel === 'Partner-Led')) return false;
-      else if (sourceFilter !== 'other' && ev.sourceChannel !== sourceFilter) return false;
+      const ch = lc(ev.sourceChannel);
+      if (sourceFilter === 'other') {
+        if (ch === 'shopify owned' || ch === 'partner-led') return false;
+      } else if (ch !== lc(sourceFilter)) {
+        return false;
+      }
     }
     if (q) {
       const haystack = [ev.title, ev.champion, ev.tacticType, ev.agency, ev.sourceChannel, ev.notes].join(' ').toLowerCase();
@@ -612,9 +618,15 @@ function filteredEvents() {
   });
 }
 
+const REGION_IDS = ['f-all','f-anz','f-sea','f-jp','f-gcr','f-apac'];
+const SOURCE_IDS = ['src-all','src-Shopify Owned','src-Partner-Led','src-other'];
+
 function setSourceFilter(f) {
   sourceFilter = f;
-  document.querySelectorAll('.src-btn').forEach(b => b.classList.remove('active'));
+  SOURCE_IDS.forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.classList.remove('active');
+  });
   const btn = document.getElementById(`src-${f || 'all'}`);
   if (btn) btn.classList.add('active');
   refreshViews();
@@ -622,10 +634,31 @@ function setSourceFilter(f) {
 
 function setFilter(f) {
   activeFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active','all','jp','anz','sea','gcr'));
+  REGION_IDS.forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.classList.remove('active','all','jp','anz','sea','gcr','apac');
+  });
   const btn = document.getElementById(`f-${f.toLowerCase()}`);
   if (btn) { btn.classList.add('active'); btn.classList.add(f === 'ALL' ? 'all' : f.toLowerCase()); }
   refreshViews();
+}
+
+/** Reset toolbar + sidebar filters (not region/tactic UI quirks). */
+function resetToolbarFilters() {
+  searchQuery = '';
+  statusFilter = '';
+  tacticFilters = [];
+  sourceFilter = '';
+  const si = document.getElementById('search-input');
+  const ss = document.getElementById('filter-status');
+  if (si) si.value = '';
+  if (ss) ss.selectedIndex = 0;
+  document.querySelectorAll('#tactic-dropdown input[type=checkbox]').forEach(c => { c.checked = false; });
+  const tl = document.getElementById('tactic-label');
+  const tt = document.getElementById('tactic-trigger');
+  if (tl) tl.textContent = 'All Tactic Types';
+  if (tt) tt.classList.remove('has-selection');
+  setSourceFilter('');
 }
 
 function onSearchFilter() {
@@ -701,7 +734,23 @@ function renderCalendar() {
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function renderList() {
   const wrap = document.getElementById('list-wrap');
+  if (!wrap) return;
+
+  if (!allEvents.length) {
+    wrap.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);max-width:420px;margin:0 auto">No activities loaded. If the sync bar above shows an error, fix Apps Script or <strong>Publish to web</strong> for the spreadsheet.</div>';
+    return;
+  }
+
   const evs  = filteredEvents().slice().sort((a,b) => a.date.localeCompare(b.date));
+  if (!evs.length) {
+    wrap.innerHTML = `<div style="padding:40px;text-align:center;color:var(--muted);max-width:440px;margin:0 auto">
+      <div>No activities match your current filters (${allEvents.length} loaded).</div>
+      <button type="button" class="filter-select" style="margin-top:14px;cursor:pointer" onclick="resetToolbarFilters()">Clear search, status, tactic &amp; source filters</button>
+      <div style="margin-top:10px;font-size:12px">Region filters are unchanged. Pick <strong>All Regions</strong> in the sidebar if needed.</div>
+    </div>`;
+    return;
+  }
+
   const byMonth = {};
   evs.forEach(ev => { const m = ev.date.slice(0,7); if (!byMonth[m]) byMonth[m] = []; byMonth[m].push(ev); });
   wrap.innerHTML = Object.entries(byMonth).map(([ym, evs]) => {
@@ -726,7 +775,7 @@ function renderList() {
       </div>`;
     }).join('');
     return `<div class="list-month"><div class="list-month-hdr">${MONTHS[+m-1]} ${y}</div>${rows}</div>`;
-  }).join('') || '<div style="padding:40px;text-align:center;color:var(--muted)">No activities match your filters.</div>';
+  }).join('');
 }
 
 // ── View toggle ───────────────────────────────────────────────────
