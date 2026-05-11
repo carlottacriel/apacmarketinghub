@@ -21,6 +21,7 @@ function findSheetByName(ss, name) {
 function doGet(e) {
   var action    = (e && e.parameter && e.parameter.action) ? e.parameter.action : '';
   var sheetName = (e && e.parameter && e.parameter.sheet)  ? e.parameter.sheet  : '';
+  var callback  = (e && e.parameter && e.parameter.callback) ? String(e.parameter.callback) : '';
 
   var data;
 
@@ -34,11 +35,18 @@ function doGet(e) {
     data = { error: 'Use ?action=orgchart or ?action=tactics or ?action=cms&sheet=TABNAME' };
   }
 
-  var output = ContentService
-    .createTextOutput(JSON.stringify({ ok: true, data: data }))
-    .setMimeType(ContentService.MimeType.JSON);
+  var payload = JSON.stringify({ ok: true, data: data });
 
-  return output;
+  // JSONP for Quick/IAP sites where fetch() to script.google.com is blocked — load via <script src="...&callback=name">
+  if (callback && /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(callback)) {
+    return ContentService
+      .createTextOutput(callback + '(' + payload + ');')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+
+  return ContentService
+    .createTextOutput(payload)
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function getSheetData(spreadsheetId, sheetName) {

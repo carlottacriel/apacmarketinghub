@@ -33,10 +33,10 @@ const CONFIG = {
   MASTER_SHEET_ID: '1iXiwUD4TMb-37LsE-rTgfPsUMQ0BOa5bexxMNi8HamA',
 
   // ── Apps Script Web App URL ────────────────────────────────────────────────
-  // SOURCE OF TRUTH when set: Org Chart + tactic tracker calendar (tab NEW_Calendar_TEMPLATE).
-  // Without it, the tracker uses “Publish to web” CSV, which can lag or return login HTML.
-  // Deploy: Sheet → Extensions → Apps Script → paste appsscript/Code.gs → Deploy → Web App →
-  //   Execute as: Me  |  Who has access: Anyone → Copy URL → paste below.
+  // REQUIRED for tactic tracker on Quick/IAP: fetch() to Sheets is blocked; paste Web App URL here.
+  // Sheet → Extensions → Apps Script → paste appsscript/Code.gs → Deploy → New deployment → Web App →
+  //   Execute as: Me  |  Who has access: Anyone (even anonymous) → Copy URL (/exec) → paste below.
+  // After changing Code.gs, create a new deployment so JSONP/callback updates apply.
   APPS_SCRIPT_URL: '',
 
   // ── Slack Channels ─────────────────────────────────────────────────────────

@@ -613,8 +613,10 @@ async function loadFromAppsScript() {
   const base = typeof CONFIG !== 'undefined' && CONFIG.APPS_SCRIPT_URL && String(CONFIG.APPS_SCRIPT_URL).trim();
   if (!base) return undefined;
   try {
-    const url = `${base.trim()}?action=cms&sheet=${encodeURIComponent(TACTICS_TAB_NAME)}`;
-    const res = await fetch(url);
+    const u = new URL(base.trim());
+    u.searchParams.set('action', 'cms');
+    u.searchParams.set('sheet', TACTICS_TAB_NAME);
+    const res = await fetch(u.toString());
     if (!res.ok) return undefined;
     const json = await res.json();
     if (!json.ok || !json.data || json.data.error) return undefined;
@@ -628,9 +630,74 @@ async function loadFromAppsScript() {
   }
 }
 
+/**
+ * Same data as fetch(), but via JSONP script tag — works when Quick + IAP blocks cross-origin fetch.
+ * Requires Apps Script Code.gs that supports the `callback` query param (JSONP).
+ */
+function loadFromAppsScriptJsonp() {
+  const base = typeof CONFIG !== 'undefined' && CONFIG.APPS_SCRIPT_URL && String(CONFIG.APPS_SCRIPT_URL).trim();
+  if (!base) return Promise.reject(new Error('APPS_SCRIPT_URL not set'));
+  return new Promise((resolve, reject) => {
+    const cb = 'as_jsonp_' + Date.now();
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('Apps Script JSONP timed out'));
+    }, 35000);
+    let scriptEl = null;
+    function cleanup() {
+      clearTimeout(timer);
+      try {
+        delete window[cb];
+      } catch (_) {}
+      if (scriptEl && scriptEl.parentNode) scriptEl.remove();
+    }
+    window[cb] = function (payload) {
+      cleanup();
+      try {
+        if (!payload || !payload.ok) {
+          reject(new Error((payload && payload.data && payload.data.error) || 'Apps Script error'));
+          return;
+        }
+        if (payload.data && payload.data.error) {
+          reject(new Error(String(payload.data.error)));
+          return;
+        }
+        const rows = payload.data && payload.data.rows;
+        if (!rows || !rows.length) {
+          resolve([]);
+          return;
+        }
+        const matrix = appsRowsToMatrix(rows);
+        resolve(csvToEvents(matrix));
+      } catch (err) {
+        reject(err);
+      }
+    };
+    try {
+      const u = new URL(base.trim());
+      u.searchParams.set('action', 'cms');
+      u.searchParams.set('sheet', TACTICS_TAB_NAME);
+      u.searchParams.set('callback', cb);
+      scriptEl = document.createElement('script');
+      scriptEl.src = u.toString();
+      scriptEl.onerror = () => {
+        cleanup();
+        reject(new Error('Script blocked — update Apps Script with JSONP callback support and redeploy'));
+      };
+      document.head.appendChild(scriptEl);
+    } catch (err) {
+      cleanup();
+      reject(err);
+    }
+  });
+}
+
 // ── Load data ────────────────────────────────────────────────────
 async function loadData() {
   setSyncState('loading', 'Loading from APAC Marketing Calendar…');
+
+  const hasAppsScript =
+    typeof CONFIG !== 'undefined' && CONFIG.APPS_SCRIPT_URL && String(CONFIG.APPS_SCRIPT_URL).trim();
 
   const scriptEvents = await loadFromAppsScript();
   if (scriptEvents !== undefined) {
@@ -645,6 +712,25 @@ async function loadData() {
     updateStats();
     onSearchFilter();
     return;
+  }
+
+  if (hasAppsScript) {
+    try {
+      const ev = await loadFromAppsScriptJsonp();
+      allEvents = ev;
+      const suffix = `${new Date().toLocaleTimeString()}`;
+      setSyncState(
+        'ok',
+        allEvents.length
+          ? `Live data (sheet API, JSONP — IAP-safe) — ${allEvents.length} activities · ${suffix}`
+          : `Live data (sheet API, JSONP) — 0 activities · ${suffix}`
+      );
+      updateStats();
+      onSearchFilter();
+      return;
+    } catch (je) {
+      console.warn('Apps Script JSONP failed:', je.message);
+    }
   }
 
   let csvErr = null;
@@ -684,7 +770,7 @@ async function loadData() {
       allEvents = [];
       setSyncState(
         'err',
-        `Calendar could not load. (1) Paste APPS_SCRIPT_URL in config.js and redeploy the hub — best for everyone. (2) Or File → Share → Publish to web → republish and update the pub URL in tracker. (3) Or stay signed into Google in this browser with access to the sheet. CSV: ${csvErr.message} · GViz: ${e2.message}`
+        `Calendar could not load. Quick sites use Google IAP — fetch() to Sheets often fails and GViz scripts may be blocked. Fix: deploy Apps Script from repo appsscript/Code.gs (includes JSONP), paste Web App URL into config.js APPS_SCRIPT_URL, redeploy hub + new Apps Script deployment. CSV: ${csvErr.message} · GViz: ${e2.message}`
       );
       console.warn('GViz fallback failed:', e2.message);
     }
