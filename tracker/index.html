@@ -731,8 +731,9 @@ function renderList() {
 
 // ── View toggle ───────────────────────────────────────────────────
 function setView(v) {
+  // #list-wrap defaults to display:none in CSS — clearing inline style leaves it hidden.
   document.getElementById('calendar-wrap').style.display = v === 'calendar' ? '' : 'none';
-  document.getElementById('list-wrap').style.display     = v === 'list'     ? '' : 'none';
+  document.getElementById('list-wrap').style.display     = v === 'list'     ? 'block' : 'none';
   document.getElementById('btn-cal').classList.toggle('active',  v === 'calendar');
   document.getElementById('btn-list').classList.toggle('active', v === 'list');
   if (v === 'calendar' && calendarInstance) calendarInstance.updateSize();
