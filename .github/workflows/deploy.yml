@@ -1,23 +1,17 @@
-name: Deploy to Quick
+# Auto-deploy is disabled.
+# This workflow needs the repo to live under the Shopify GitHub org
+# (Workload Identity Federation rejects personal-account repos).
+#
+# Until the repo is transferred, deploy by running ./deploy.sh from a
+# Quick site owner's laptop.
+
+name: Deploy to Quick (disabled)
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  id-token: write
-
 jobs:
-  deploy:
+  noop:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: Shopify/skai-train/.github/actions/deploy-to-quick@main
-        with:
-          dir: .
-          site_name: apacmarketinghub
-          ignore_patterns: |
-            deploy.sh
+      - run: echo "Auto-deploy disabled. See workflow file for details."
