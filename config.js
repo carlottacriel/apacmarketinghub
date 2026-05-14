@@ -72,21 +72,21 @@ const CONFIG = {
   // Fields: emoji, title, desc, link (optional — leave '' to make it non-clickable)
   HOT_THIS_WEEK: [
     {
-      emoji: '🚀',
-      title: 'Q2 Planning Kickoff',
-      desc: 'APAC-wide campaign planning session kicking off — share your briefs by April 3.',
-      link: '',
+      emoji: '📘',
+      title: 'ANZ GEO Playbook — 30 leads in',
+      desc: 'How Australians win in AI discovery. Internal prospect send 18 May. CSMs and AEs: build Tier 1/2 cadences off this. Read the playbook (PDF inside).',
+      link: 'https://www.shopify.com/au/enterprise/resource/geo-playbook?utm_source=sales_outreach&utm_medium=outbound&utm_campaign=bob_Q126OMYHIY&utm_content=crm-v1',
     },
     {
-      emoji: '📣',
-      title: 'Shopify Unite ANZ',
-      desc: 'Merchant summit — April 15–16, Sydney. Registration now open.',
-      link: '',
+      emoji: '🎙️',
+      title: 'ANZ Webinar — 62 of 200 regs',
+      desc: 'AI Commerce in Practice: what enterprise retailers need before agentic scales. CSMs own merchant sends, internal prospect send 27 May. Help us hit 200 — register and share.',
+      link: 'https://www.bigmarker.com/octomedia/ai-commerce-in-practice-what-enterprise-retailers-need-before-agentic-scales-8160aa270f54?utm_bmcr_source=shopify',
     },
     {
-      emoji: '📊',
-      title: 'Q1 Results Review',
-      desc: 'Q1 performance review all-hands on April 8. Check the Performance Dashboard for prep.',
+      emoji: '🎯',
+      title: 'Build your CRM cadences',
+      desc: 'Both activities are designed to feed pipeline. Stand up Tier 1 and Tier 2 cadences in CRM now so the leads land in active sequences, not cold inboxes.',
       link: '',
     },
   ],
